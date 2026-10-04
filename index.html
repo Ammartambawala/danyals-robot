@@ -1,0 +1,1716 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Danyal's Robot">
+<meta name="theme-color" content="#e9f5f1">
+<title>Danyal's Robot</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap">
+<style>
+/* Layout: one-screen game. Portrait stacks the board above the arrow tray and controls.
+   Wide screens put the board on the left and the controls on the right.
+   Single bright look by choice: a child's game, not a themed document. */
+:root {
+  --ink: #16314b;
+  --ink-soft: #4a647c;
+  --ground: #e9f5f1;
+  --panel: #ffffff;
+  --line: #c5dcd5;
+  --tile-a: #d8eee8;
+  --tile-b: #c9e5de;
+  --robot: #ff8a3d;
+  --robot-deep: #d96a1f;
+  --arrow: #3b6cf6;
+  --arrow-deep: #2a52c9;
+  --repeat: #8a5cf6;
+  --repeat-deep: #6a3fd0;
+  --repeat-soft: #efe8ff;
+  --go: #1fae6b;
+  --go-deep: #158a53;
+  --stop: #e8574a;
+  --stop-deep: #b8392e;
+  --star: #ffc531;
+  --star-off: #cfdcd8;
+  --wall: #6b7f92;
+  --wall-deep: #566a7d;
+  --pit: #10263b;
+  --pit-rim: #8f765e;
+  --monster: #e4577b;
+  --monster-deep: #a8305a;
+  --font-display: 'Fredoka', 'Trebuchet MS', system-ui, sans-serif;
+  --font-body: 'Nunito', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --slot: clamp(42px, 11.8vw, 58px);
+  color-scheme: light;
+}
+html, body { height: 100%; }
+@media (max-height: 720px) {
+  :root { --slot: clamp(36px, 10vw, 44px); }
+  .pbtn { width: 60px; height: 48px; border-radius: 15px; }
+  .go { min-height: 52px; font-size: 24px; }
+  .count { font-size: 18px; min-width: 40px; }
+}
+[hidden] { display: none !important; }
+body {
+  background: var(--ground);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: 700;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: manipulation;
+}
+button { font: inherit; color: inherit; cursor: pointer; border: 0; background: none; padding: 0; }
+button:focus-visible { outline: 4px solid var(--star); outline-offset: 3px; }
+.ico { width: 26px; height: 26px; fill: none; stroke: currentColor; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
+
+.app {
+  height: 100%;
+  box-sizing: border-box;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding-inline: 16px;
+  padding-block: 8px 14px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.screen { flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 10px; overflow-y: auto; overflow-x: hidden; }
+
+/* ---------- Level select ---------- */
+.menu-head { display: flex; align-items: center; gap: 16px; padding-top: 6px; }
+.menu-robot { width: 84px; flex: none; }
+.menu-robot svg { width: 100%; display: block; }
+.title { font-family: var(--font-display); font-weight: 700; font-size: clamp(30px, 8vw, 46px); line-height: 1.05; margin: 0; text-wrap: balance; }
+.sub { margin: 4px 0 0; color: var(--ink-soft); font-weight: 700; }
+.pads { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 10px; align-content: start; padding-block: 8px 16px; }
+.pad {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+  min-height: 92px; border-radius: 22px; border: 3px solid var(--line); background: var(--panel);
+  box-shadow: 0 4px 0 var(--line);
+}
+.pad-num { font-family: var(--font-display); font-weight: 700; font-size: 32px; line-height: 1; height: 36px; display: grid; place-items: center; }
+.pad-num .ico { width: 22px; height: 22px; }
+.pad-stars { display: flex; gap: 1px; }
+.pad.current { border-color: var(--arrow); box-shadow: 0 4px 0 var(--arrow-deep); }
+.pad.locked { opacity: .5; box-shadow: none; cursor: default; }
+.pad:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 1px 0 var(--line); }
+.mstar { width: 17px; height: 17px; fill: var(--star-off); }
+.mstar.on { fill: var(--star); }
+.foot { margin-top: auto; display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding-block: 8px 4px; }
+.link { font-size: 14px; font-weight: 800; color: var(--ink-soft); text-decoration: underline; text-underline-offset: 3px; padding: 8px 4px; }
+
+/* ---------- Game ---------- */
+.bar { display: flex; align-items: center; gap: 10px; flex: none; }
+.icon-btn {
+  width: 46px; height: 46px; flex: none; border-radius: 15px; border: 3px solid var(--line);
+  background: var(--panel); display: grid; place-items: center;
+}
+.icon-btn:active { transform: translateY(2px); }
+.bar-title { flex: 1; min-width: 0; }
+.bar-title h2 { margin: 0; font-family: var(--font-display); font-size: 24px; font-weight: 700; line-height: 1.1; }
+.bar-title span { display: block; font-size: 14px; color: var(--ink-soft); font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.q { font-family: var(--font-display); font-weight: 700; font-size: 26px; }
+
+.stage { flex: 1 1 auto; display: flex; flex-direction: column; gap: 10px; }
+.board-wrap { flex: 1 1 0; min-height: 90px; min-width: 0; display: grid; place-items: center; overflow: hidden; }
+.board {
+  position: relative; width: calc(var(--cols) * var(--cell)); height: calc(var(--rows) * var(--cell));
+  border-radius: 22px; overflow: hidden; box-shadow: 0 0 0 5px var(--panel), 0 9px 0 5px var(--line);
+}
+.tile, .item, .trail {
+  position: absolute; left: calc(var(--x) * var(--cell)); top: calc(var(--y) * var(--cell));
+  width: var(--cell); height: var(--cell);
+}
+.tile.a { background: var(--tile-a); }
+.tile.b { background: var(--tile-b); }
+.item { display: grid; place-items: center; z-index: 2; }
+.item svg { width: 76%; height: 76%; display: block; }
+.item.wall svg { width: 100%; height: 100%; }
+.item.star { transition: transform .35s ease, opacity .35s ease; }
+.item.star.got { transform: scale(1.9); opacity: 0; }
+.item.goal.lit svg { animation: pop .6s ease 2; }
+.item.monster svg { animation: bob 2.4s ease-in-out infinite; }
+.item.hit svg { animation: chomp .5s ease; }
+.trail { z-index: 1; display: grid; place-items: center; }
+.trail::after { content: ''; width: 20%; height: 20%; border-radius: 50%; background: var(--ink); opacity: .18; }
+
+.robot {
+  position: absolute; left: 0; top: 0; width: var(--cell); height: var(--cell); z-index: 3;
+  transform: translate(calc(var(--x) * var(--cell)), calc(var(--y) * var(--cell)));
+  transition: transform calc(var(--step, 520ms) * .8) cubic-bezier(.4, .1, .3, 1);
+}
+.robot .body { width: 100%; height: 100%; display: grid; place-items: center; }
+.robot svg { width: 84%; height: 84%; display: block; }
+.robot.wobble .body { animation: wobble .55s ease; }
+.robot.fall .body { animation: fall .75s ease-in forwards; }
+.pupil { transition: transform .2s ease; }
+.robot[data-dir="right"] .pupil { transform: translateX(2.4px); }
+.robot[data-dir="left"] .pupil { transform: translateX(-2.4px); }
+.robot[data-dir="up"] .pupil { transform: translateY(-2.4px); }
+.robot[data-dir="down"] .pupil { transform: translateY(2.4px); }
+
+.r-body { fill: var(--robot); }
+.r-deep { fill: var(--robot-deep); }
+.r-plate { fill: var(--ink); }
+.r-eye { fill: #fff; }
+.r-pupil { fill: var(--ink); }
+.r-mouth { fill: none; stroke: #fff; stroke-width: 2.6; stroke-linecap: round; }
+.r-antenna { stroke: var(--ink); stroke-width: 4; stroke-linecap: round; }
+.r-bulb { fill: var(--star); }
+.b-body { fill: var(--go); }
+.b-deep { fill: var(--go-deep); }
+.b-bolt { fill: var(--star); }
+.s-fill { fill: var(--star); stroke: #e0a21a; stroke-width: 3; stroke-linejoin: round; }
+.w-1 { fill: var(--wall); }
+.w-2 { fill: var(--wall-deep); }
+.h-rim { fill: var(--pit-rim); }
+.h-pit { fill: var(--pit); }
+.h-shine { fill: #fff; opacity: .1; }
+.m-body { fill: var(--monster); }
+.m-eye { fill: #fff; }
+.m-pupil { fill: var(--ink); }
+.m-brow { fill: none; stroke: var(--monster-deep); stroke-width: 5; stroke-linecap: round; }
+.m-mouth { fill: var(--monster-deep); }
+.m-fang { fill: #fff; }
+
+.controls { display: flex; flex-direction: column; gap: 10px; flex: none; }
+.tray {
+  display: flex; flex-wrap: wrap; align-content: flex-start; gap: 8px; padding: 10px;
+  background: var(--panel); border: 3px solid var(--line); border-radius: 22px; overflow-y: auto;
+}
+.tray.shake { animation: shake .4s ease; }
+.slot {
+  width: var(--slot); height: var(--slot); border-radius: 16px; border: 3px dashed var(--line);
+  display: grid; place-items: center; flex: none; color: #fff;
+}
+.slot.filled { border: 0; background: var(--arrow); box-shadow: 0 4px 0 var(--arrow-deep); }
+.slot.next { border-color: var(--arrow); animation: ring 1.4s ease-in-out infinite; }
+.slot.alt { border-color: var(--arrow); opacity: .55; }
+.slot.running { outline: 4px solid var(--star); outline-offset: 2px; transform: scale(1.1); }
+.slot.inner { width: calc(var(--slot) * .86); height: calc(var(--slot) * .86); border-radius: 12px; }
+.slot.inner.next { border-color: var(--repeat); }
+.rep {
+  display: flex; align-items: center; gap: 5px; padding: 5px; flex: none;
+  border: 3px solid var(--repeat); background: var(--repeat-soft); border-radius: 20px;
+}
+.rep { position: relative; }
+.rep-del {
+  position: absolute; top: -7px; right: -7px; width: 26px; height: 26px; border-radius: 50%;
+  background: #fff; color: var(--repeat-deep); border: 2.5px solid var(--repeat); font-weight: 900; font-size: 15px; line-height: 1;
+  display: grid; place-items: center; z-index: 2;
+}
+.rep-del::after { content: ''; position: absolute; inset: -6px; }
+.rep.running { outline: 4px solid var(--star); outline-offset: 2px; }
+.rep-body { display: flex; gap: 5px; }
+.count {
+  height: calc(var(--slot) * .86); min-width: 46px; padding-inline: 6px; border-radius: 12px;
+  background: var(--repeat); color: #fff; box-shadow: 0 4px 0 var(--repeat-deep);
+  display: flex; align-items: center; justify-content: center; gap: 4px;
+  font-family: var(--font-display); font-weight: 700; font-size: 21px;
+}
+.arrow-ico { width: 60%; height: 60%; fill: none; stroke: currentColor; stroke-width: 3.6; stroke-linecap: round; stroke-linejoin: round; }
+.arrow-ico.up { transform: rotate(-90deg); }
+.arrow-ico.down { transform: rotate(90deg); }
+.arrow-ico.left { transform: rotate(180deg); }
+
+.palette { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
+.pbtn {
+  width: 68px; height: 58px; border-radius: 18px; background: var(--arrow); color: #fff;
+  box-shadow: 0 5px 0 var(--arrow-deep); display: grid; place-items: center;
+}
+.pbtn.repeat { background: var(--repeat); box-shadow: 0 5px 0 var(--repeat-deep); }
+.pbtn .ico { width: 30px; height: 30px; stroke-width: 3; }
+.pbtn:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--arrow-deep); }
+.pbtn.off { opacity: .38; }
+
+.runbar { display: flex; gap: 10px; align-items: center; justify-content: center; }
+.go {
+  flex: 1; max-width: 260px; min-height: 60px; border-radius: 22px; background: var(--go); color: #fff;
+  box-shadow: 0 6px 0 var(--go-deep); display: flex; align-items: center; justify-content: center; gap: 10px;
+  font-family: var(--font-display); font-weight: 700; font-size: 28px; padding-inline: 16px;
+}
+.go .ico { width: 30px; height: 30px; fill: currentColor; stroke-width: 1; }
+.go:active { transform: translateY(3px); box-shadow: 0 3px 0 var(--go-deep); }
+.go.stop { background: var(--stop); box-shadow: 0 6px 0 var(--stop-deep); }
+.ghost { width: 52px; height: 52px; border-radius: 16px; border: 3px solid var(--line); background: var(--panel); display: grid; place-items: center; flex: none; }
+.ghost:active { transform: translateY(2px); }
+.toast { margin: 0; min-height: 2.6em; display: grid; place-items: center; text-align: center; color: var(--ink-soft); font-size: 15px; font-weight: 800; line-height: 1.3; text-wrap: balance; }
+.toast.hint { color: var(--arrow-deep); }
+#game.running .tray, #game.running .palette, #game.running .ghost { pointer-events: none; opacity: .75; }
+
+@media (orientation: landscape) and (min-width: 640px) {
+  .stage { flex-direction: row; align-items: stretch; gap: 20px; }
+  .board-wrap { flex: 1.25 1 0; min-height: 0; }
+  .controls { flex: 1 1 0; max-width: 460px; justify-content: center; }
+  :root { --slot: 56px; }
+}
+
+/* ---------- Win ---------- */
+.overlay { position: fixed; inset: 0; z-index: 20; background: rgba(22, 49, 75, .5); display: grid; place-items: center; padding: 16px; }
+.win-card {
+  width: 100%; max-width: 360px; background: var(--panel); border-radius: 32px; padding: 22px 20px;
+  display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center;
+  box-shadow: 0 8px 0 var(--line);
+}
+.win-robot { width: 96px; }
+.win-robot svg { width: 100%; display: block; animation: hop .9s ease 2; }
+.win-card h2 { margin: 0; font-family: var(--font-display); font-size: 34px; font-weight: 700; }
+.win-stars { display: flex; gap: 8px; }
+.wstar { width: 56px; height: 56px; fill: var(--star-off); }
+.wstar.on { fill: var(--star); animation: pop .5s ease both; }
+.win-card p { margin: 0; font-size: 18px; color: var(--ink-soft); line-height: 1.35; min-height: 2.6em; }
+.win-actions { display: flex; flex-direction: column; gap: 10px; align-items: stretch; width: 100%; }
+.win-actions .go { max-width: none; font-size: 26px; }
+.win-row { display: flex; gap: 10px; }
+.pill { flex: 1; min-height: 52px; border-radius: 18px; border: 3px solid var(--line); background: var(--panel); font-size: 17px; font-weight: 800; }
+
+@keyframes ring { 0%, 100% { box-shadow: 0 0 0 0 rgba(59, 108, 246, .0); } 50% { box-shadow: 0 0 0 6px rgba(59, 108, 246, .25); } }
+@keyframes wobble { 0%, 100% { transform: rotate(0); } 20% { transform: rotate(-11deg); } 40% { transform: rotate(9deg); } 60% { transform: rotate(-6deg); } 80% { transform: rotate(4deg); } }
+@keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+@keyframes pop { 0% { transform: scale(.4); } 70% { transform: scale(1.2); } 100% { transform: scale(1); } }
+@keyframes hop { 0%, 100% { transform: translateY(0); } 40% { transform: translateY(-14px); } }
+@keyframes fall { 0% { transform: scale(1) rotate(0); opacity: 1; } 100% { transform: scale(.05) rotate(220deg); opacity: 0; } }
+@keyframes chomp { 0%, 100% { transform: scale(1); } 40% { transform: scale(1.25); } }
+@keyframes bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3%); } }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}
+</style>
+<style>html{padding:env(safe-area-inset-top,0) 0 env(safe-area-inset-bottom,0)}body{margin:0}</style>
+</head>
+<body>
+
+
+<div class="app">
+  <section id="menu" class="screen">
+    <div class="menu-head">
+      <div class="menu-robot" id="menuRobot"></div>
+      <div>
+        <h1 class="title">Danyal's Robot</h1>
+        <p class="sub">Help the robot reach the battery.</p>
+      </div>
+    </div>
+    <div class="pads" id="pads"></div>
+    <div class="foot">
+      <button class="link" id="unlockBtn" type="button"></button>
+      <button class="link" id="menuSound" type="button"></button>
+      <button class="link" id="resetBtn" type="button">Reset progress</button>
+    </div>
+  </section>
+
+  <section id="game" class="screen" hidden>
+    <header class="bar">
+      <button class="icon-btn" id="backBtn" type="button" aria-label="All levels"></button>
+      <div class="bar-title"><h2 id="levelNum">Level 1</h2><span id="levelName"></span></div>
+      <button class="icon-btn q" id="hintBtn" type="button" aria-label="Show hint">?</button>
+      <button class="icon-btn" id="soundBtn" type="button" aria-label="Sound"></button>
+    </header>
+    <div class="stage">
+      <div class="board-wrap" id="boardWrap"><div class="board" id="board"></div></div>
+      <div class="controls">
+        <p class="toast" id="toast" role="status" aria-live="polite"></p>
+        <div class="tray" id="tray" aria-label="Your arrows"></div>
+        <div class="palette" id="palette"></div>
+        <div class="runbar">
+          <button class="ghost" id="undoBtn" type="button" aria-label="Undo last arrow"></button>
+          <button class="go" id="go" type="button"></button>
+          <button class="ghost" id="clearBtn" type="button" aria-label="Clear all arrows"></button>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div class="overlay" id="win" hidden role="dialog" aria-modal="true" aria-labelledby="winTitle">
+  <div class="win-card">
+    <div class="win-robot" id="winRobot"></div>
+    <h2 id="winTitle">You did it!</h2>
+    <div class="win-stars" id="winStars"></div>
+    <p id="winMsg"></p>
+    <div class="win-actions">
+      <button class="go" id="winNext" type="button">Next level</button>
+      <div class="win-row">
+        <button class="pill" id="winAgain" type="button">Play again</button>
+        <button class="pill" id="winMenu" type="button">Levels</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LEVEL DATA: paste a new levels.json here to change or add levels. -->
+<script type="application/json" id="level-data">
+{
+  "version": 2,
+  "rules": {
+    "movement": "absolute directions: each arrow moves one tile, the robot never turns",
+    "blocked": "a wall or the edge of the grid makes the robot bump: the program stops and the arrows stay in the tray",
+    "hazards": "O = hole, M = monster: stepping on one ends the run; the arrows stay in the tray",
+    "goalTypes": {
+      "reach_goal": "robot must end on G",
+      "collect_all_then_reach": "robot must pick up every star and end on G"
+    },
+    "slotLimit": "null = no limit, otherwise the number of top-level slots in the tray (a hard rule)",
+    "repeat": "counts = the numbers the Repeat chip cycles through, innerSlots = arrows one Repeat can hold",
+    "rating": "3 stars if tray slots used <= par, 2 stars if <= par + 2, else 1 star. Never a fail state."
+  },
+  "levels": [
+    {
+      "id": 1,
+      "title": "First Steps",
+      "concept": "Arrows move the robot. Press Go to run them.",
+      "map": ["....", "R..G", "...."],
+      "goal": "reach_goal",
+      "blocks": ["right"],
+      "slotLimit": null,
+      "par": 3,
+      "hint": "Tap the arrow 3 times, then press Go."
+    },
+    {
+      "id": 2,
+      "title": "Going Down",
+      "concept": "Different arrows go different ways.",
+      "map": [".R..", "....", "....", ".G.."],
+      "goal": "reach_goal",
+      "blocks": ["up", "down"],
+      "slotLimit": null,
+      "par": 3,
+      "hint": "The goal is below the robot."
+    },
+    {
+      "id": 3,
+      "title": "Around the Corner",
+      "concept": "Combine two directions in order.",
+      "map": ["R...", "....", "..G."],
+      "goal": "reach_goal",
+      "blocks": ["up", "down", "left", "right"],
+      "slotLimit": null,
+      "par": 4,
+      "hint": "First go across, then go down."
+    },
+    {
+      "id": 4,
+      "title": "The Wall",
+      "concept": "Plan a detour around an obstacle.",
+      "map": ["R.#G", "....", "...."],
+      "goal": "reach_goal",
+      "blocks": ["up", "down", "left", "right"],
+      "slotLimit": null,
+      "par": 5,
+      "hint": "The wall blocks the way. Go under it."
+    },
+    {
+      "id": 5,
+      "title": "Star Collector",
+      "concept": "Visit stars on the way to the goal.",
+      "map": ["R.*.", "....", "..*G"],
+      "goal": "collect_all_then_reach",
+      "blocks": ["up", "down", "left", "right"],
+      "slotLimit": null,
+      "par": 5,
+      "hint": "Pick up both stars, then reach the goal."
+    },
+    {
+      "id": 6,
+      "title": "Mind the Hole",
+      "concept": "Holes end the run. Go around them.",
+      "map": [".....", "R.O.G", "....."],
+      "goal": "reach_goal",
+      "blocks": ["up", "down", "left", "right"],
+      "slotLimit": null,
+      "par": 6,
+      "hint": "Do not step in the hole. Go around it."
+    },
+    {
+      "id": 7,
+      "title": "Monster Ahead",
+      "concept": "Monsters end the run too.",
+      "map": [".R..", "....", ".M..", "....", ".G.."],
+      "goal": "reach_goal",
+      "blocks": ["up", "down", "left", "right"],
+      "slotLimit": null,
+      "par": 6,
+      "hint": "The monster is in the way. Find another way down."
+    },
+    {
+      "id": 8,
+      "title": "Hole and Star",
+      "concept": "Hazards plus a star.",
+      "map": ["R.O.G", "..*..", "....."],
+      "goal": "collect_all_then_reach",
+      "blocks": ["up", "down", "left", "right"],
+      "slotLimit": null,
+      "par": 6,
+      "hint": "Pick up the star and stay out of the hole."
+    },
+    {
+      "id": 9,
+      "title": "The Doorway",
+      "concept": "A monster guards the near doorway. Use the far one.",
+      "map": ["R.#..", "..M.G", "....."],
+      "goal": "reach_goal",
+      "blocks": ["up", "down", "left", "right"],
+      "slotLimit": null,
+      "par": 7,
+      "hint": "The monster blocks the near door. Use the other one."
+    },
+    {
+      "id": 10,
+      "title": "Careful Steps",
+      "concept": "",
+      "map": [".*...", ".....", "..M.G", "R.O.."],
+      "goal": "collect_all_then_reach",
+      "blocks": ["up", "down", "left", "right"],
+      "slotLimit": 12,
+      "par": 9,
+      "hint": "Avoid the holes and monsters. Collect every star."
+    },
+    {
+      "id": 11,
+      "title": "Do It Again",
+      "concept": "First loop: Repeat holds one arrow and runs it several times.",
+      "map": [".......", "R.....G", "......."],
+      "goal": "reach_goal",
+      "blocks": ["right", "repeat"],
+      "slotLimit": 3,
+      "par": 1,
+      "hint": "Too far for 3 arrows. Tap Repeat, add an arrow inside, then tap the number until it says 6.",
+      "repeat": {
+        "counts": [2, 3, 4, 5, 6],
+        "innerSlots": 1
+      }
+    },
+    {
+      "id": 12,
+      "title": "Straight Down",
+      "concept": "Repeat a vertical arrow.",
+      "map": [".R.", "...", "...", "...", "...", "...", ".G."],
+      "goal": "reach_goal",
+      "blocks": ["down", "repeat"],
+      "slotLimit": 3,
+      "par": 1,
+      "hint": "Use Repeat to go all the way down.",
+      "repeat": {
+        "counts": [2, 3, 4, 5, 6],
+        "innerSlots": 1
+      }
+    },
+    {
+      "id": 13,
+      "title": "Two Lines",
+      "concept": "Two Repeats in a row.",
+      "map": ["R......", ".......", ".......", "......G"],
+      "goal": "reach_goal",
+      "blocks": ["right", "down", "repeat"],
+      "slotLimit": 4,
+      "par": 2,
+      "hint": "Go across, then down. Use a Repeat for each.",
+      "repeat": {
+        "counts": [2, 3, 4, 5, 6],
+        "innerSlots": 1
+      }
+    },
+    {
+      "id": 14,
+      "title": "Wall Run",
+      "concept": "Order matters when a wall is in the way.",
+      "map": ["R..#...", "...#...", "......G"],
+      "goal": "reach_goal",
+      "blocks": ["right", "down", "repeat"],
+      "slotLimit": 4,
+      "par": 2,
+      "hint": "Go down first, then across under the wall.",
+      "repeat": {
+        "counts": [2, 3, 4, 5, 6],
+        "innerSlots": 1
+      }
+    },
+    {
+      "id": 15,
+      "title": "Around the Hole",
+      "concept": "Repeat plus a detour.",
+      "map": [".......", "R...O.G", "......."],
+      "goal": "reach_goal",
+      "blocks": ["up", "down", "right", "repeat"],
+      "slotLimit": 5,
+      "par": 3,
+      "hint": "The hole is in the way. Go over the top.",
+      "repeat": {
+        "counts": [2, 3, 4, 5, 6],
+        "innerSlots": 1
+      }
+    },
+    {
+      "id": 16,
+      "title": "Stairs",
+      "concept": "A Repeat can hold two arrows.",
+      "map": ["R....", ".....", ".....", ".....", "....G"],
+      "goal": "reach_goal",
+      "blocks": ["right", "down", "repeat"],
+      "slotLimit": 1,
+      "par": 1,
+      "hint": "Only 1 slot! This Repeat holds 2 arrows: right, then down.",
+      "repeat": {
+        "counts": [2, 3, 4, 5],
+        "innerSlots": 2
+      }
+    },
+    {
+      "id": 17,
+      "title": "Star Stairs",
+      "concept": "Stairs with a star on the way.",
+      "map": ["...G.", "..*..", ".....", "R...."],
+      "goal": "collect_all_then_reach",
+      "blocks": ["right", "up", "repeat"],
+      "slotLimit": 1,
+      "par": 1,
+      "hint": "Only 1 slot. Climb the stairs and pick up the star.",
+      "repeat": {
+        "counts": [2, 3, 4, 5],
+        "innerSlots": 2
+      }
+    },
+    {
+      "id": 18,
+      "title": "Wall Maze",
+      "concept": "",
+      "map": [".*...#", "......", "R..#M.", "...O.G", "...#.."],
+      "goal": "collect_all_then_reach",
+      "blocks": ["up", "down", "left", "right"],
+      "slotLimit": 11,
+      "par": 10,
+      "hint": "Avoid the holes and monsters. Collect every star."
+    },
+    {
+      "id": 19,
+      "title": "Monster Alley",
+      "concept": "",
+      "map": ["#.....", "..#...", "......", "....M.", "G..M.R"],
+      "goal": "reach_goal",
+      "blocks": ["up", "down", "left", "right"],
+      "slotLimit": 9,
+      "par": 9,
+      "hint": "Only 9 slots. Avoid the holes and monsters."
+    },
+    {
+      "id": 20,
+      "title": "Over and Over",
+      "concept": "",
+      "map": ["........", "RM.....G", "........"],
+      "goal": "reach_goal",
+      "blocks": ["up", "down", "left", "right", "repeat"],
+      "slotLimit": 3,
+      "par": 3,
+      "hint": "Only 3 slots. Use Repeat. Avoid the holes and monsters.",
+      "repeat": {
+        "counts": [2, 3, 4, 5, 6, 7],
+        "innerSlots": 1
+      }
+    },
+    {
+      "id": 21,
+      "title": "Star Hunt",
+      "concept": "",
+      "map": ["..*...", "......", "....*.", "R..O..", "....OG", "......"],
+      "goal": "collect_all_then_reach",
+      "blocks": ["up", "down", "left", "right"],
+      "slotLimit": 12,
+      "par": 12,
+      "hint": "Only 12 slots. Avoid the holes and monsters. Collect every star."
+    },
+    {
+      "id": 22,
+      "title": "Loop the Loop",
+      "concept": "",
+      "map": [".......", "....M.R", "G....O.", ".......", "*......"],
+      "goal": "collect_all_then_reach",
+      "blocks": ["up", "down", "left", "right", "repeat"],
+      "slotLimit": 3,
+      "par": 3,
+      "hint": "Only 3 slots. Use Repeat. Avoid the holes and monsters. Collect every star.",
+      "repeat": {
+        "counts": [2, 3, 4, 5, 6],
+        "innerSlots": 1
+      }
+    },
+    {
+      "id": 23,
+      "title": "Again and Again",
+      "concept": "",
+      "map": ["......", "......", "......", "R.M...", "..O..G", "......"],
+      "goal": "reach_goal",
+      "blocks": ["up", "down", "left", "right", "repeat"],
+      "slotLimit": 2,
+      "par": 2,
+      "hint": "Only 2 slots. A Repeat can hold 2 arrows. Avoid the holes and monsters.",
+      "repeat": {
+        "counts": [2, 3, 4, 5],
+        "innerSlots": 2
+      }
+    },
+    {
+      "id": 24,
+      "title": "Hole Hopper",
+      "concept": "",
+      "map": [".#...#G", "R.O....", "..O.*M.", ".......", "...#..."],
+      "goal": "collect_all_then_reach",
+      "blocks": ["up", "down", "left", "right"],
+      "slotLimit": 11,
+      "par": 11,
+      "hint": "Only 11 slots. Avoid the holes and monsters. Collect every star."
+    },
+    {
+      "id": 25,
+      "title": "Round and Round",
+      "concept": "",
+      "map": [".......", ".......", ".....*.", "G..O.OR", ".......", "......."],
+      "goal": "collect_all_then_reach",
+      "blocks": ["up", "down", "left", "right", "repeat"],
+      "slotLimit": 2,
+      "par": 2,
+      "hint": "Only 2 slots. A Repeat can hold 2 arrows. Avoid the holes and monsters. Collect every star.",
+      "repeat": {
+        "counts": [2, 3, 4, 5, 6],
+        "innerSlots": 2
+      }
+    },
+    {
+      "id": 26,
+      "title": "Keep Repeating",
+      "concept": "",
+      "map": ["........", "RO......", ".O....*G", "........", "........"],
+      "goal": "collect_all_then_reach",
+      "blocks": ["up", "down", "left", "right", "repeat"],
+      "slotLimit": 4,
+      "par": 4,
+      "hint": "Only 4 slots. Use Repeat. Avoid the holes and monsters. Collect every star.",
+      "repeat": {
+        "counts": [2, 3, 4, 5, 6, 7],
+        "innerSlots": 1
+      }
+    },
+    {
+      "id": 27,
+      "title": "Loop It",
+      "concept": "",
+      "map": [".......", ".......", ".......", "..M*...", "R..O..G", ".O*...."],
+      "goal": "collect_all_then_reach",
+      "blocks": ["up", "down", "left", "right", "repeat"],
+      "slotLimit": 5,
+      "par": 5,
+      "hint": "Only 5 slots. A Repeat can hold 2 arrows. Avoid the holes and monsters. Collect every star.",
+      "repeat": {
+        "counts": [2, 3, 4, 5, 6],
+        "innerSlots": 2
+      }
+    },
+    {
+      "id": 28,
+      "title": "Repeat Pro",
+      "concept": "",
+      "map": [".......", ".......", ".......", ".......", "O.*..M.", "G..O..R"],
+      "goal": "collect_all_then_reach",
+      "blocks": ["up", "down", "left", "right", "repeat"],
+      "slotLimit": 3,
+      "par": 3,
+      "hint": "Only 3 slots. A Repeat can hold 2 arrows. Avoid the holes and monsters. Collect every star.",
+      "repeat": {
+        "counts": [2, 3, 4, 5, 6],
+        "innerSlots": 2
+      }
+    },
+    {
+      "id": 29,
+      "title": "Never Stop",
+      "concept": "",
+      "map": ["..O..O#.", "R..#...G", "....M...", ".....#..", ".#.*...."],
+      "goal": "collect_all_then_reach",
+      "blocks": ["up", "down", "left", "right", "repeat"],
+      "slotLimit": 4,
+      "par": 4,
+      "hint": "Only 4 slots. Use Repeat. Avoid the holes and monsters. Collect every star.",
+      "repeat": {
+        "counts": [2, 3, 4, 5, 6, 7],
+        "innerSlots": 1
+      }
+    },
+    {
+      "id": 30,
+      "title": "Plan Ahead",
+      "concept": "",
+      "map": [".......", ".......", ".......", ".......", "R..O...", "....M.G"],
+      "goal": "reach_goal",
+      "blocks": ["up", "down", "left", "right", "repeat"],
+      "slotLimit": 2,
+      "par": 2,
+      "hint": "Only 2 slots. A Repeat can hold 3 arrows. Avoid the holes and monsters.",
+      "repeat": {
+        "counts": [2, 3, 4, 5, 6],
+        "innerSlots": 3
+      }
+    },
+    {
+      "id": 31,
+      "title": "Star Trail",
+      "concept": "",
+      "map": ["G.....OR", ".OM.....", "....*...", "...*....", "........", "........"],
+      "goal": "collect_all_then_reach",
+      "blocks": ["up", "down", "left", "right", "repeat"],
+      "slotLimit": 5,
+      "par": 5,
+      "hint": "Only 5 slots. Use Repeat. Avoid the holes and monsters. Collect every star.",
+      "repeat": {
+        "counts": [2, 3, 4, 5, 6, 7],
+        "innerSlots": 1
+      }
+    },
+    {
+      "id": 32,
+      "title": "Monster Dodge",
+      "concept": "",
+      "map": ["..*....", ".....#.", ".#.....", "GM....#", "#......", ".O....R", "..#..MO"],
+      "goal": "collect_all_then_reach",
+      "blocks": ["up", "down", "left", "right", "repeat"],
+      "slotLimit": 3,
+      "par": 3,
+      "hint": "Only 3 slots. A Repeat can hold 2 arrows. Avoid the holes and monsters. Collect every star.",
+      "repeat": {
+        "counts": [2, 3, 4, 5, 6],
+        "innerSlots": 2
+      }
+    },
+    {
+      "id": 33,
+      "title": "Star Catcher",
+      "concept": "",
+      "map": ["G.....OR", "O.*..M..", ".....*..", "........", "........", "........"],
+      "goal": "collect_all_then_reach",
+      "blocks": ["up", "down", "left", "right", "repeat"],
+      "slotLimit": 3,
+      "par": 3,
+      "hint": "Only 3 slots. A Repeat can hold 2 arrows. Avoid the holes and monsters. Collect every star.",
+      "repeat": {
+        "counts": [2, 3, 4, 5, 6, 7],
+        "innerSlots": 2
+      }
+    },
+    {
+      "id": 34,
+      "title": "Sneaky Monsters",
+      "concept": "",
+      "map": [".....R..", "...#.#.M", ".....#O#", ".#.*M...", "....O...", ".......G"],
+      "goal": "collect_all_then_reach",
+      "blocks": ["up", "down", "left", "right"],
+      "slotLimit": 11,
+      "par": 11,
+      "hint": "Only 11 slots. Avoid the holes and monsters. Collect every star."
+    },
+    {
+      "id": 35,
+      "title": "Mind the Gaps",
+      "concept": "",
+      "map": ["..*....", "...M...", "RO...OG", ".......", ".......", "......."],
+      "goal": "collect_all_then_reach",
+      "blocks": ["up", "down", "left", "right", "repeat"],
+      "slotLimit": 2,
+      "par": 2,
+      "hint": "Only 2 slots. A Repeat can hold 3 arrows. Avoid the holes and monsters. Collect every star.",
+      "repeat": {
+        "counts": [2, 3, 4, 5, 6],
+        "innerSlots": 3
+      }
+    },
+    {
+      "id": 36,
+      "title": "Shiny Stars",
+      "concept": "",
+      "map": ["........", "G.*...M.", "...O...*", "........", ".......O", "......OR", "........"],
+      "goal": "collect_all_then_reach",
+      "blocks": ["up", "down", "left", "right", "repeat"],
+      "slotLimit": 6,
+      "par": 6,
+      "hint": "Only 6 slots. A Repeat can hold 2 arrows. Avoid the holes and monsters. Collect every star.",
+      "repeat": {
+        "counts": [2, 3, 4, 5, 6, 7],
+        "innerSlots": 2
+      }
+    },
+    {
+      "id": 37,
+      "title": "Star Run",
+      "concept": "",
+      "map": [".R*...*", "..##...", ".M.....", "O......", "......#", "O.O..*.", ".G..#.."],
+      "goal": "collect_all_then_reach",
+      "blocks": ["up", "down", "left", "right", "repeat"],
+      "slotLimit": 6,
+      "par": 6,
+      "hint": "Only 6 slots. Use Repeat. Avoid the holes and monsters. Collect every star.",
+      "repeat": {
+        "counts": [2, 3, 4, 5, 6],
+        "innerSlots": 1
+      }
+    },
+    {
+      "id": 38,
+      "title": "Star Path",
+      "concept": "",
+      "map": ["........", ".......*", "........", "G.O....R", ".OM...OM", "........", "......*."],
+      "goal": "collect_all_then_reach",
+      "blocks": ["up", "down", "left", "right", "repeat"],
+      "slotLimit": 6,
+      "par": 6,
+      "hint": "Only 6 slots. Use Repeat. Avoid the holes and monsters. Collect every star.",
+      "repeat": {
+        "counts": [2, 3, 4, 5, 6, 7],
+        "innerSlots": 1
+      }
+    },
+    {
+      "id": 39,
+      "title": "Watch Your Step",
+      "concept": "",
+      "map": ["........", "........", "........", "..O.M...", "GO*....R", "........"],
+      "goal": "collect_all_then_reach",
+      "blocks": ["up", "down", "left", "right", "repeat"],
+      "slotLimit": 3,
+      "par": 3,
+      "hint": "Only 3 slots. A Repeat can hold 3 arrows. Avoid the holes and monsters. Collect every star.",
+      "repeat": {
+        "counts": [2, 3, 4, 5, 6, 7],
+        "innerSlots": 3
+      }
+    },
+    {
+      "id": 40,
+      "title": "Monster Maze",
+      "concept": "",
+      "map": ["G#O.....", "..*.M...", "###O*...", "...O...R", "......M.", "......#.", "...#...."],
+      "goal": "collect_all_then_reach",
+      "blocks": ["up", "down", "left", "right", "repeat"],
+      "slotLimit": 6,
+      "par": 6,
+      "hint": "Only 6 slots. A Repeat can hold 2 arrows. Avoid the holes and monsters. Collect every star.",
+      "repeat": {
+        "counts": [2, 3, 4, 5, 6, 7],
+        "innerSlots": 2
+      }
+    },
+    {
+      "id": 41,
+      "title": "Monster Town",
+      "concept": "",
+      "map": ["........", ".*......", "........", "........", "R.O..MOG", "O....*.M", "........"],
+      "goal": "collect_all_then_reach",
+      "blocks": ["up", "down", "left", "right", "repeat"],
+      "slotLimit": 5,
+      "par": 5,
+      "hint": "Only 5 slots. A Repeat can hold 2 arrows. Avoid the holes and monsters. Collect every star.",
+      "repeat": {
+        "counts": [2, 3, 4, 5, 6, 7],
+        "innerSlots": 2
+      }
+    },
+    {
+      "id": 42,
+      "title": "Hole Maze",
+      "concept": "",
+      "map": ["........", "O.....*.", "GM.O.O.R", "........", "........", "........", "..*....."],
+      "goal": "collect_all_then_reach",
+      "blocks": ["up", "down", "left", "right", "repeat"],
+      "slotLimit": 3,
+      "par": 3,
+      "hint": "Only 3 slots. A Repeat can hold 3 arrows. Avoid the holes and monsters. Collect every star.",
+      "repeat": {
+        "counts": [2, 3, 4, 5, 6, 7],
+        "innerSlots": 3
+      }
+    },
+    {
+      "id": 43,
+      "title": "Deep Holes",
+      "concept": "",
+      "map": [".#*....*", ".......#", "....#...", "..O....G", "RO##MM..", "#...O...", ".......*"],
+      "goal": "collect_all_then_reach",
+      "blocks": ["up", "down", "left", "right", "repeat"],
+      "slotLimit": 5,
+      "par": 5,
+      "hint": "Only 5 slots. A Repeat can hold 3 arrows. Avoid the holes and monsters. Collect every star.",
+      "repeat": {
+        "counts": [2, 3, 4, 5, 6, 7],
+        "innerSlots": 3
+      }
+    },
+    {
+      "id": 44,
+      "title": "Clever Robot",
+      "concept": "",
+      "map": ["........", "O....*O.", "G....M.R", "..*O..M.", "........", "...*....", "........"],
+      "goal": "collect_all_then_reach",
+      "blocks": ["up", "down", "left", "right", "repeat"],
+      "slotLimit": 5,
+      "par": 5,
+      "hint": "Only 5 slots. A Repeat can hold 2 arrows. Avoid the holes and monsters. Collect every star.",
+      "repeat": {
+        "counts": [2, 3, 4, 5, 6, 7],
+        "innerSlots": 2
+      }
+    },
+    {
+      "id": 45,
+      "title": "Long Way Round",
+      "concept": "",
+      "map": ["G.OOM.MR", ".O.*....", "........", "........", "........", "........", "*......."],
+      "goal": "collect_all_then_reach",
+      "blocks": ["up", "down", "left", "right", "repeat"],
+      "slotLimit": 4,
+      "par": 4,
+      "hint": "Only 4 slots. A Repeat can hold 3 arrows. Avoid the holes and monsters. Collect every star.",
+      "repeat": {
+        "counts": [2, 3, 4, 5, 6, 7],
+        "innerSlots": 3
+      }
+    },
+    {
+      "id": 46,
+      "title": "Tiny Tray",
+      "concept": "",
+      "map": [".R......", ".M....*.", ".M......", "*.....*.", "O.O.....", "..O.....", "G......."],
+      "goal": "collect_all_then_reach",
+      "blocks": ["up", "down", "left", "right", "repeat"],
+      "slotLimit": 6,
+      "par": 6,
+      "hint": "Only 6 slots. Use Repeat. Avoid the holes and monsters. Collect every star.",
+      "repeat": {
+        "counts": [2, 3, 4, 5, 6, 7],
+        "innerSlots": 1
+      }
+    },
+    {
+      "id": 47,
+      "title": "Tricky Corner",
+      "concept": "",
+      "map": ["..*.....", "##.*.#..", ".....#..", "*.......", "..#OO..G", "..M.#...", "RM.OM..#"],
+      "goal": "collect_all_then_reach",
+      "blocks": ["up", "down", "left", "right", "repeat"],
+      "slotLimit": 5,
+      "par": 5,
+      "hint": "Only 5 slots. A Repeat can hold 2 arrows. Avoid the holes and monsters. Collect every star.",
+      "repeat": {
+        "counts": [2, 3, 4, 5, 6, 7],
+        "innerSlots": 2
+      }
+    },
+    {
+      "id": 48,
+      "title": "Smart Moves",
+      "concept": "",
+      "map": ["........", "........", ".......*", "......*.", ".....M.O", "RO.O*..G", "..OM...."],
+      "goal": "collect_all_then_reach",
+      "blocks": ["up", "down", "left", "right", "repeat"],
+      "slotLimit": 5,
+      "par": 5,
+      "hint": "Only 5 slots. A Repeat can hold 2 arrows. Avoid the holes and monsters. Collect every star.",
+      "repeat": {
+        "counts": [2, 3, 4, 5, 6, 7],
+        "innerSlots": 2
+      }
+    },
+    {
+      "id": 49,
+      "title": "Think First",
+      "concept": "",
+      "map": ["........", "........", "......**", "...*...M", "G.O.O...", "O..O...R", ".....M.."],
+      "goal": "collect_all_then_reach",
+      "blocks": ["up", "down", "left", "right", "repeat"],
+      "slotLimit": 4,
+      "par": 4,
+      "hint": "Only 4 slots. A Repeat can hold 3 arrows. Avoid the holes and monsters. Collect every star.",
+      "repeat": {
+        "counts": [2, 3, 4, 5, 6, 7],
+        "innerSlots": 3
+      }
+    },
+    {
+      "id": 50,
+      "title": "Narrow Gap",
+      "concept": "",
+      "map": ["*.M.#MOO", "G..M...R", "##..OO..", "#.......", "........", "..#.#.#.", "*......*"],
+      "goal": "collect_all_then_reach",
+      "blocks": ["up", "down", "left", "right", "repeat"],
+      "slotLimit": 5,
+      "par": 5,
+      "hint": "Only 5 slots. A Repeat can hold 2 arrows. Avoid the holes and monsters. Collect every star.",
+      "repeat": {
+        "counts": [2, 3, 4, 5, 6, 7],
+        "innerSlots": 2
+      }
+    }
+  ]
+}
+</script>
+
+<script>
+(() => {
+  'use strict';
+
+  /* ---------- helpers & art ---------- */
+  const $ = (s) => document.querySelector(s);
+  const el = (tag, cls, html) => {
+    const e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (html != null) e.innerHTML = html;
+    return e;
+  };
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  const DIRS = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] };
+  const ORDER = ['left', 'up', 'down', 'right'];
+  const LABEL = { up: 'up', down: 'down', left: 'left', right: 'right' };
+
+  const STAR_PTS = '50,8 61,38 93,38 67,58 77,90 50,70 23,90 33,58 7,38 39,38';
+  const ART = {
+    robot: '<svg viewBox="0 0 100 100" aria-hidden="true">' +
+      '<line class="r-antenna" x1="50" y1="14" x2="50" y2="25"/><circle class="r-bulb" cx="50" cy="10" r="6.5"/>' +
+      '<rect class="r-deep" x="7" y="42" width="11" height="18" rx="5"/><rect class="r-deep" x="82" y="42" width="11" height="18" rx="5"/>' +
+      '<rect class="r-deep" x="26" y="74" width="17" height="12" rx="6"/><rect class="r-deep" x="57" y="74" width="17" height="12" rx="6"/>' +
+      '<rect class="r-body" x="14" y="24" width="72" height="54" rx="17"/>' +
+      '<rect class="r-plate" x="23" y="33" width="54" height="34" rx="11"/>' +
+      '<circle class="r-eye" cx="39" cy="48" r="7.5"/><circle class="r-eye" cx="61" cy="48" r="7.5"/>' +
+      '<circle class="r-pupil pupil" cx="39" cy="48" r="3.4"/><circle class="r-pupil pupil" cx="61" cy="48" r="3.4"/>' +
+      '<path class="r-mouth" d="M43 59q7 5 14 0"/></svg>',
+    battery: '<svg viewBox="0 0 100 100" aria-hidden="true">' +
+      '<rect class="b-deep" x="78" y="40" width="12" height="20" rx="4"/>' +
+      '<rect class="b-body" x="12" y="26" width="68" height="48" rx="12"/>' +
+      '<polygon class="b-bolt" points="52,32 36,53 47,53 42,69 62,45 51,45"/></svg>',
+    star: '<svg viewBox="0 0 100 100" aria-hidden="true"><polygon class="s-fill" points="' + STAR_PTS + '"/></svg>',
+    wall: '<svg viewBox="0 0 100 100" aria-hidden="true">' +
+      '<rect class="w-2" x="3" y="8" width="94" height="89" rx="14"/>' +
+      '<rect class="w-1" x="3" y="3" width="94" height="88" rx="14"/></svg>',
+    hole: '<svg viewBox="0 0 100 100" aria-hidden="true">' +
+      '<ellipse class="h-rim" cx="50" cy="56" rx="42" ry="36"/><ellipse class="h-pit" cx="50" cy="54" rx="34" ry="28"/>' +
+      '<ellipse class="h-shine" cx="38" cy="44" rx="11" ry="5"/></svg>',
+    monster: '<svg viewBox="0 0 100 100" aria-hidden="true">' +
+      '<path class="m-body" d="M16 82C6 46 28 16 50 16s44 30 34 66c-6 8-14 4-20 8-6 4-22 4-28 0-6-4-14 0-20-8z"/>' +
+      '<circle class="m-eye" cx="37" cy="48" r="11"/><circle class="m-eye" cx="63" cy="48" r="11"/>' +
+      '<circle class="m-pupil" cx="39" cy="51" r="4.8"/><circle class="m-pupil" cx="61" cy="51" r="4.8"/>' +
+      '<path class="m-brow" d="M24 34l22 8M76 34l-22 8"/>' +
+      '<path class="m-mouth" d="M33 68q17 14 34 0z"/>' +
+      '<path class="m-fang" d="M40 69l3.5 8 3.5-8zM53 69l3.5 8 3.5-8z"/></svg>',
+    arrow: (d) => '<svg viewBox="0 0 24 24" class="arrow-ico ' + d + '" aria-hidden="true"><path d="M4 12h14M12 5l7 7-7 7"/></svg>',
+    ico: (inner, extra) => '<svg viewBox="0 0 24 24" class="ico ' + (extra || '') + '" aria-hidden="true">' + inner + '</svg>',
+    miniStar: (on) => '<svg viewBox="0 0 100 100" class="mstar' + (on ? ' on' : '') + '" aria-hidden="true"><polygon points="' + STAR_PTS + '"/></svg>',
+    bigStar: (on, i) => '<svg viewBox="0 0 100 100" class="wstar' + (on ? ' on' : '') + '" style="animation-delay:' + (i * 0.25) + 's" aria-hidden="true"><polygon points="' + STAR_PTS + '"/></svg>'
+  };
+  const P = {
+    back: '<path d="M15 5l-7 7 7 7"/>',
+    play: '<polygon points="7,4 20,12 7,20"/>',
+    stop: '<rect x="6" y="6" width="12" height="12" rx="2"/>',
+    undo: '<path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/>',
+    clear: '<path d="M5 7h14M10 7V4h4v3M7 7l1 13h8l1-13"/>',
+    loop: '<path d="M17 2l4 4-4 4"/><path d="M3 11V9a3 3 0 0 1 3-3h15"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a3 3 0 0 1-3 3H3"/>',
+    lock: '<rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
+    close: '<path d="M6 6l12 12M18 6L6 18"/>',
+    soundOn: '<path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7"/><path d="M19 6a8.5 8.5 0 0 1 0 12"/>',
+    soundOff: '<path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M17 9l5 6M22 9l-5 6"/>'
+  };
+
+  /* ---------- levels ---------- */
+  function parseLevel(def) {
+    const grid = def.map;
+    const w = Math.max(...grid.map((r) => r.length));
+    const L = {
+      id: def.id, title: def.title, w, h: grid.length,
+      walls: new Set(), hazards: new Map(), stars: new Set(), start: null, goal: null,
+      goalType: def.goal, blocks: def.blocks, slotLimit: def.slotLimit == null ? null : def.slotLimit,
+      par: def.par, hint: def.hint || '',
+      repeat: Object.assign({ counts: [2, 3, 4, 5], innerSlots: 1 }, def.repeat || {})
+    };
+    grid.forEach((row, y) => {
+      for (let x = 0; x < w; x++) {
+        const ch = row[x] || '.';
+        if (ch === '#') L.walls.add(x + ',' + y);
+        else if (ch === 'O') L.hazards.set(x + ',' + y, 'hole');
+        else if (ch === 'M') L.hazards.set(x + ',' + y, 'monster');
+        else if (ch === '*') L.stars.add(x + ',' + y);
+        else if (ch === 'R') L.start = { x, y };
+        else if (ch === 'G') L.goal = { x, y };
+      }
+    });
+    if (!L.start || !L.goal) throw new Error('Level ' + def.id + ' needs an R and a G in its map');
+    return L;
+  }
+  const DATA = JSON.parse($('#level-data').textContent);
+  const LEVELS = DATA.levels.map(parseLevel);
+  const trayCap = (L) => (L.slotLimit != null ? L.slotLimit : Math.max(8, L.par + 5));
+
+  /* ---------- engine (pure) ---------- */
+  function flatten(prog) {
+    const out = [];
+    prog.forEach((it, i) => {
+      if (it.t === 'move') out.push({ d: it.d, top: i, inner: null });
+      else for (let r = 0; r < it.n; r++) it.body.forEach((m, j) => out.push({ d: m.d, top: i, inner: j }));
+    });
+    return out;
+  }
+  const usedBlocks = (prog) => prog.length; // tray slots used: a Repeat block counts as one
+  const rate = (used, par) => (used <= par ? 3 : used <= par + 2 ? 2 : 1);
+
+  function simulate(L, moves) {
+    let x = L.start.x, y = L.start.y;
+    const got = new Set(), steps = [];
+    let blocked = false, died = null;
+    for (const m of moves) {
+      const nx = x + DIRS[m.d][0], ny = y + DIRS[m.d][1];
+      if (nx < 0 || ny < 0 || nx >= L.w || ny >= L.h || L.walls.has(nx + ',' + ny)) {
+        steps.push({ blocked: true, x, y, d: m.d, ref: m });
+        blocked = true;
+        break;
+      }
+      x = nx; y = ny;
+      const key = x + ',' + y;
+      if (L.hazards.has(key)) {
+        died = L.hazards.get(key);
+        steps.push({ died, key, x, y, d: m.d, ref: m });
+        break;
+      }
+      let star = null;
+      if (L.stars.has(key) && !got.has(key)) { got.add(key); star = key; }
+      steps.push({ x, y, d: m.d, star, ref: m });
+    }
+    const atGoal = !died && x === L.goal.x && y === L.goal.y;
+    const needStars = L.goalType === 'collect_all_then_reach';
+    const allStars = got.size === L.stars.size;
+    return { steps, blocked, died, atGoal, allStars, success: !blocked && !died && atGoal && (!needStars || allStars) };
+  }
+  window.RobotGame = { LEVELS, simulate, flatten, rate, usedBlocks };
+
+  /* ---------- state & storage ---------- */
+  const KEY = 'danyals-robot-v1';
+  const state = { L: null, program: [], cursorIn: null, running: false, token: 0, done: {}, unlockAll: false, muted: false, robot: null, starEls: {}, hazEls: {}, goalEl: null };
+  try {
+    const saved = JSON.parse(localStorage.getItem(KEY) || '{}');
+    state.done = saved.done || {};
+    state.unlockAll = !!saved.unlockAll;
+    state.muted = !!saved.muted;
+  } catch (e) { /* storage unavailable: play without saving */ }
+  const save = () => {
+    try { localStorage.setItem(KEY, JSON.stringify({ done: state.done, unlockAll: state.unlockAll, muted: state.muted })); } catch (e) { /* ignore */ }
+  };
+
+  /* ---------- sound ---------- */
+  let actx = null;
+  function tone(freq, dur, delay, vol) {
+    if (state.muted) return;
+    try {
+      actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+      if (actx.state === 'suspended') actx.resume();
+      const t = actx.currentTime + (delay || 0);
+      const o = actx.createOscillator(), g = actx.createGain();
+      o.type = 'sine'; o.frequency.value = freq;
+      g.gain.setValueAtTime(0, t);
+      g.gain.linearRampToValueAtTime(vol || 0.1, t + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + (dur || 0.18));
+      o.connect(g); g.connect(actx.destination);
+      o.start(t); o.stop(t + (dur || 0.18) + 0.05);
+    } catch (e) { /* no audio */ }
+  }
+  const sfx = {
+    tap: () => tone(520, 0.08, 0, 0.07),
+    step: (i) => tone(330 + (i % 6) * 40, 0.14, 0, 0.08),
+    star: () => { tone(880, 0.15, 0, 0.1); tone(1175, 0.2, 0.1, 0.1); },
+    win: () => [523, 659, 784, 1047].forEach((f, i) => tone(f, 0.28, i * 0.13, 0.11))
+  };
+
+  /* ---------- screens ---------- */
+  const isOpen = (id) => {
+    if (state.unlockAll) return true;
+    const i = LEVELS.findIndex((l) => l.id === id);
+    return i <= 0 || state.done[LEVELS[i - 1].id] !== undefined;
+  };
+
+  function renderMenu() {
+    const pads = $('#pads');
+    pads.textContent = '';
+    let currentMarked = false;
+    LEVELS.forEach((L) => {
+      const open = isOpen(L.id);
+      const stars = state.done[L.id] || 0;
+      const cur = open && !stars && !currentMarked;
+      if (cur) currentMarked = true;
+      const b = el('button', 'pad' + (open ? '' : ' locked') + (cur ? ' current' : ''));
+      b.type = 'button';
+      b.dataset.level = L.id;
+      b.disabled = !open;
+      b.setAttribute('aria-label', open ? 'Level ' + L.id + (stars ? ', ' + stars + ' stars' : '') : 'Level ' + L.id + ' locked');
+      b.innerHTML = '<span class="pad-num">' + (open ? L.id : ART.ico(P.lock)) + '</span>' +
+        '<span class="pad-stars">' + [1, 2, 3].map((n) => ART.miniStar(n <= stars)).join('') + '</span>';
+      pads.append(b);
+    });
+    $('#unlockBtn').textContent = state.unlockAll ? 'Lock levels again' : 'Unlock all levels';
+    renderSound();
+    const cur = pads.querySelector('.current');
+    if (cur && cur.scrollIntoView) cur.scrollIntoView({ block: 'center' });
+  }
+  function renderSound() {
+    $('#menuSound').textContent = state.muted ? 'Sound is off' : 'Sound is on';
+    $('#soundBtn').innerHTML = ART.ico(state.muted ? P.soundOff : P.soundOn);
+    $('#soundBtn').setAttribute('aria-label', state.muted ? 'Turn sound on' : 'Turn sound off');
+  }
+  function showMenu() {
+    stopRun();
+    $('#win').hidden = true;
+    $('#game').hidden = true;
+    $('#menu').hidden = false;
+    renderMenu();
+  }
+
+  /* ---------- board ---------- */
+  const board = $('#board');
+  const place = (node, x, y) => { node.style.setProperty('--x', x); node.style.setProperty('--y', y); return node; };
+
+  function buildBoard() {
+    const L = state.L;
+    board.textContent = '';
+    board.style.setProperty('--cols', L.w);
+    board.style.setProperty('--rows', L.h);
+    state.starEls = {};
+    state.hazEls = {};
+    for (let y = 0; y < L.h; y++) for (let x = 0; x < L.w; x++) board.append(place(el('div', 'tile ' + ((x + y) % 2 ? 'b' : 'a')), x, y));
+    L.walls.forEach((k) => { const [x, y] = k.split(',').map(Number); board.append(place(el('div', 'item wall', ART.wall), x, y)); });
+    L.hazards.forEach((kind, k) => {
+      const [x, y] = k.split(',').map(Number);
+      const e = place(el('div', 'item ' + kind, ART[kind]), x, y);
+      state.hazEls[k] = e;
+      board.append(e);
+    });
+    state.goalEl = place(el('div', 'item goal', ART.battery), L.goal.x, L.goal.y);
+    board.append(state.goalEl);
+    L.stars.forEach((k) => { const [x, y] = k.split(',').map(Number); const s = place(el('div', 'item star', ART.star), x, y); state.starEls[k] = s; board.append(s); });
+    const r = place(el('div', 'robot', '<div class="body">' + ART.robot + '</div>'), L.start.x, L.start.y);
+    r.dataset.dir = 'right';
+    state.robot = r;
+    board.append(r);
+    fit();
+  }
+  function reserveTray(squeeze) {
+    const L = state.L;
+    if (!L) return;
+    const sample = tray.querySelector('.slot:not(.inner)');
+    const cs = getComputedStyle(tray);
+    const w = tray.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+    if (!sample || !(w > 0) || !(sample.offsetWidth > 0)) return;
+    const sw = sample.offsetWidth, gap = 8, cap = trayCap(L);
+    let repW = 0, repH = 0;
+    if (L.blocks.includes('repeat')) {
+      // measure a real Repeat block so the reserved height matches what the tray will need
+      const probe = el('div', 'rep');
+      probe.style.cssText = 'visibility:hidden;position:absolute;left:0;top:0';
+      probe.innerHTML = '<button class="count" type="button"><span>×7</span></button><div class="rep-body">' +
+        '<button class="slot inner" type="button"></button>'.repeat(L.repeat.innerSlots) + '</div>';
+      tray.append(probe);
+      repW = probe.offsetWidth; repH = probe.offsetHeight;
+      probe.remove();
+    }
+    const heightFor = (items) => {
+      let total = 0, x = 0, rowH = sw;
+      items.forEach((it) => {
+        const iw = it === 'r' ? repW : sw, ih = it === 'r' ? repH : sw;
+        if (x > 0 && x + gap + iw > w) { total += rowH + gap; x = 0; rowH = sw; }
+        x += (x > 0 ? gap : 0) + iw;
+        rowH = Math.max(rowH, ih);
+      });
+      return total + rowH;
+    };
+    let best = heightFor(Array(cap).fill('a'));
+    if (repW) {
+      for (let r = 1; r <= Math.min(cap, 3); r++) {
+        const reps = Array(r).fill('r'), arrows = Array(cap - r).fill('a'), alt = [];
+        let placed = 0;
+        for (let i = 0; i < cap; i++) { if (i % 2 === 0 && placed < r) { alt.push('r'); placed++; } else alt.push('a'); }
+        best = Math.max(best, heightFor(reps.concat(arrows)), heightFor(arrows.concat(reps)), heightFor(alt));
+      }
+    }
+    // on a very short screen, reserve two rows at most (a rare third row scrolls inside the tray)
+    if (squeeze) best = Math.min(best, 2 * Math.max(sw, repH) + gap);
+    tray.style.height = Math.ceil(best) + 'px';
+  }
+  function fit() {
+    const L = state.L;
+    if (!L) return;
+    const wrap = $('#boardWrap');
+    const calc = () => {
+      const w = wrap.clientWidth - 14, h = wrap.clientHeight - 20;
+      const c = Math.floor(Math.min(w / L.w, h / L.h));
+      return c > 0 ? c : 64;
+    };
+    reserveTray(false);
+    let cell = calc();
+    if (cell < 44) { reserveTray(true); cell = calc(); }
+    board.style.setProperty('--cell', Math.max(12, Math.min(104, cell)) + 'px');
+  }
+  function resetBoard() {
+    const L = state.L;
+    board.querySelectorAll('.trail').forEach((t) => t.remove());
+    Object.values(state.starEls).forEach((s) => s.classList.remove('got'));
+    Object.values(state.hazEls).forEach((s) => s.classList.remove('hit'));
+    state.goalEl.classList.remove('lit');
+    state.robot.classList.remove('wobble', 'fall');
+    state.robot.dataset.dir = 'right';
+    place(state.robot, L.start.x, L.start.y);
+    clearHL();
+  }
+
+  /* ---------- tray ---------- */
+  const tray = $('#tray');
+  const slotArrow = (d, cls, data) => {
+    const b = el('button', 'slot filled ' + cls, ART.arrow(d));
+    b.type = 'button';
+    Object.assign(b.dataset, data);
+    b.setAttribute('aria-label', 'Remove ' + LABEL[d] + ' arrow');
+    return b;
+  };
+  function renderTray() {
+    const L = state.L, cap = trayCap(L), prog = state.program;
+    tray.textContent = '';
+    prog.forEach((it, i) => {
+      if (it.t === 'move') { tray.append(slotArrow(it.d, '', { act: 'remove-top', top: i })); return; }
+      const rep = el('div', 'rep');
+      rep.dataset.top = i;
+      const cnt = el('button', 'count', '<span>×' + it.n + '</span>');
+      cnt.type = 'button';
+      cnt.dataset.act = 'count'; cnt.dataset.top = i;
+      cnt.setAttribute('aria-label', 'Repeat ' + it.n + ' times. Tap to change.');
+      rep.append(cnt);
+      const del = el('button', 'rep-del', '×');
+      del.type = 'button'; del.dataset.act = 'rep-del'; del.dataset.top = i;
+      del.setAttribute('aria-label', 'Take out this repeat block');
+      rep.append(del);
+      const body = el('div', 'rep-body');
+      for (let j = 0; j < L.repeat.innerSlots; j++) {
+        if (it.body[j]) body.append(slotArrow(it.body[j].d, 'inner', { act: 'remove-inner', top: i, inner: j }));
+        else {
+          const e = el('button', 'slot inner' + (state.cursorIn === i && j === it.body.length ? ' next' : ''));
+          e.type = 'button';
+          e.dataset.act = 'inner-empty'; e.dataset.top = i; e.dataset.inner = j;
+          e.setAttribute('aria-label', 'Empty slot inside repeat');
+          body.append(e);
+        }
+      }
+      rep.append(body);
+      tray.append(rep);
+    });
+    for (let i = prog.length; i < cap; i++) {
+      const e = el('button', 'slot' + (i === prog.length ? (state.cursorIn === null ? ' next' : ' alt') : ''));
+      e.type = 'button';
+      e.dataset.act = 'top-empty';
+      e.setAttribute('aria-label', 'Empty slot');
+      tray.append(e);
+    }
+    updatePalette();
+  }
+  const canAddArrow = () => {
+    const c = state.cursorIn, it = c !== null ? state.program[c] : null;
+    return (it && it.body.length < state.L.repeat.innerSlots) || state.program.length < trayCap(state.L);
+  };
+  const canAddRepeat = () => state.program.length < trayCap(state.L);
+
+  function addArrow(d) {
+    const c = state.cursorIn, it = c !== null ? state.program[c] : null;
+    if (it && it.body.length < state.L.repeat.innerSlots) {
+      it.body.push({ d });
+      if (it.body.length >= state.L.repeat.innerSlots) state.cursorIn = null;
+    } else {
+      state.cursorIn = null;
+      state.program.push({ t: 'move', d });
+    }
+  }
+  function addRepeat() {
+    state.program.push({ t: 'repeat', n: state.L.repeat.counts[0], body: [] });
+    state.cursorIn = state.program.length - 1;
+  }
+
+  function buildPalette() {
+    const L = state.L, pal = $('#palette');
+    pal.textContent = '';
+    ORDER.filter((d) => L.blocks.includes(d)).forEach((d) => {
+      const b = el('button', 'pbtn', ART.arrow(d));
+      b.type = 'button'; b.dataset.d = d;
+      b.setAttribute('aria-label', 'Add ' + LABEL[d] + ' arrow');
+      pal.append(b);
+    });
+    if (L.blocks.includes('repeat')) {
+      const b = el('button', 'pbtn repeat', ART.ico(P.loop));
+      b.type = 'button'; b.dataset.d = 'repeat';
+      b.setAttribute('aria-label', 'Add a repeat block');
+      pal.append(b);
+    }
+  }
+  function updatePalette() {
+    $('#palette').querySelectorAll('.pbtn').forEach((b) => {
+      const ok = b.dataset.d === 'repeat' ? canAddRepeat() : canAddArrow();
+      b.classList.toggle('off', !ok);
+      b.setAttribute('aria-disabled', ok ? 'false' : 'true');
+    });
+  }
+  const shake = () => { tray.classList.remove('shake'); void tray.offsetWidth; tray.classList.add('shake'); };
+  const setToast = (msg, cls) => {
+    const t = $('#toast');
+    t.textContent = msg || '';
+    t.className = 'toast' + (cls ? ' ' + cls : '');
+  };
+
+  $('#palette').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-d]');
+    if (!b || state.running) return;
+    setToast('');
+    const rep = b.dataset.d === 'repeat';
+    if (rep ? !canAddRepeat() : !canAddArrow()) { shake(); setToast('No more room. Tap an arrow to take it out.'); return; }
+    sfx.tap();
+    if (rep) addRepeat(); else addArrow(b.dataset.d);
+    renderTray();
+  });
+
+  tray.addEventListener('click', (e) => {
+    if (state.running) return;
+    let t = e.target.closest('[data-act]');
+    if (!t) {
+      const fr = e.target.closest('.rep');
+      if (!fr || state.running) return;
+      const k = Number(fr.dataset.top), it = state.program[k];
+      if (it && it.body.length < state.L.repeat.innerSlots) { state.cursorIn = k; renderTray(); }
+      return;
+    }
+    const i = Number(t.dataset.top), j = Number(t.dataset.inner), prog = state.program;
+    setToast('');
+    sfx.tap();
+    switch (t.dataset.act) {
+      case 'remove-top':
+        prog.splice(i, 1);
+        if (state.cursorIn === i) state.cursorIn = null;
+        else if (state.cursorIn !== null && state.cursorIn > i) state.cursorIn -= 1;
+        break;
+      case 'remove-inner':
+        prog[i].body.splice(j, 1);
+        state.cursorIn = i;
+        break;
+      case 'count': {
+        const c = state.L.repeat.counts;
+        prog[i].n = c[(c.indexOf(prog[i].n) + 1) % c.length];
+        break;
+      }
+      case 'rep-del':
+        prog.splice(i, 1);
+        if (state.cursorIn === i) state.cursorIn = null;
+        else if (state.cursorIn !== null && state.cursorIn > i) state.cursorIn -= 1;
+        break;
+      case 'inner-empty': state.cursorIn = i; break;
+      case 'top-empty': state.cursorIn = null; break;
+      default: break;
+    }
+    renderTray();
+  });
+
+  $('#undoBtn').addEventListener('click', () => {
+    if (state.running) return;
+    const prog = state.program, c = state.cursorIn;
+    setToast('');
+    if (c !== null && prog[c] && prog[c].body.length) prog[c].body.pop();
+    else if (prog.length) { prog.pop(); state.cursorIn = null; }
+    renderTray();
+  });
+  $('#clearBtn').addEventListener('click', () => {
+    if (state.running) return;
+    state.program = []; state.cursorIn = null; setToast('');
+    renderTray();
+  });
+
+  /* ---------- running a program ---------- */
+  function clearHL() { tray.querySelectorAll('.running').forEach((n) => n.classList.remove('running')); }
+  function highlight(ref) {
+    clearHL();
+    if (!ref) return;
+    if (ref.inner === null) {
+      const n = tray.querySelector('.slot.filled[data-top="' + ref.top + '"]:not(.inner)');
+      if (n) n.classList.add('running');
+    } else {
+      const rep = tray.querySelector('.rep[data-top="' + ref.top + '"]');
+      if (rep) {
+        rep.classList.add('running');
+        const n = rep.querySelector('[data-inner="' + ref.inner + '"]');
+        if (n) n.classList.add('running');
+      }
+    }
+  }
+  function setRunUI(on) {
+    $('#game').classList.toggle('running', on);
+    const g = $('#go');
+    g.classList.toggle('stop', on);
+    g.innerHTML = ART.ico(on ? P.stop : P.play) + '<span>' + (on ? 'Stop' : 'Go') + '</span>';
+    g.setAttribute('aria-label', on ? 'Stop the robot' : 'Run the arrows');
+  }
+  function stopRun() {
+    state.token += 1;
+    if (state.running) {
+      state.running = false;
+      setRunUI(false);
+      if (state.L) resetBoard();
+    }
+  }
+  const stepMs = () => (typeof window.__STEP_MS === 'number' ? window.__STEP_MS : 520);
+
+  async function run() {
+    if (state.running) { stopRun(); return; }
+    const L = state.L;
+    const moves = flatten(state.program);
+    if (!moves.length) { shake(); setToast('Tap some arrows first, then press Go.'); return; }
+    setToast('');
+    const sim = simulate(L, moves);
+    const token = ++state.token, STEP = stepMs();
+    state.running = true;
+    setRunUI(true);
+    resetBoard();
+    board.style.setProperty('--step', STEP + 'ms');
+    await sleep(STEP * 0.6);
+    for (let i = 0; i < sim.steps.length; i++) {
+      const s = sim.steps[i];
+      if (token !== state.token) return;
+      highlight(s.ref);
+      if (s.blocked) {
+        state.robot.dataset.dir = s.d;
+        state.robot.classList.add('wobble');
+        await sleep(STEP * 1.2);
+        break;
+      }
+      const prevX = Number(state.robot.style.getPropertyValue('--x')), prevY = Number(state.robot.style.getPropertyValue('--y'));
+      board.append(place(el('div', 'trail'), prevX, prevY));
+      state.robot.dataset.dir = s.d;
+      place(state.robot, s.x, s.y);
+      sfx.step(i);
+      await sleep(STEP);
+      if (token !== state.token) return;
+      if (s.died) {
+        if (state.hazEls[s.key]) state.hazEls[s.key].classList.add('hit');
+        state.robot.classList.add('fall');
+        await sleep(STEP * 1.5);
+        break;
+      }
+      if (s.star) { state.starEls[s.star].classList.add('got'); sfx.star(); }
+    }
+    if (token !== state.token) return;
+    clearHL();
+    if (sim.success) { finishWin(); return; }
+    if (sim.died === 'hole') setToast('Oops! The robot fell in the hole. Try another way.');
+    else if (sim.died === 'monster') setToast('Oh no! The monster got the robot. Try another way.');
+    else if (sim.blocked) setToast('Bump! Something is in the way. Try a different arrow.');
+    else if (sim.atGoal && !sim.allStars) setToast('Pick up every star on the way.');
+    else setToast('Not there yet. Change your arrows and press Go.');
+    await sleep(STEP * 1.6);
+    if (token !== state.token) return;
+    state.running = false;
+    setRunUI(false);
+    resetBoard();
+  }
+  $('#go').addEventListener('click', run);
+
+  /* ---------- winning ---------- */
+  function finishWin() {
+    const L = state.L;
+    const used = usedBlocks(state.program), stars = rate(used, L.par);
+    state.done[L.id] = Math.max(state.done[L.id] || 0, stars);
+    save();
+    state.goalEl.classList.add('lit');
+    sfx.win();
+    setTimeout(() => {
+      state.running = false;
+      setRunUI(false);
+      showWin(stars, used);
+    }, stepMs() > 50 ? 800 : 0);
+  }
+  function showWin(stars, used) {
+    const L = state.L;
+    $('#winStars').innerHTML = [1, 2, 3].map((n) => ART.bigStar(n <= stars, n)).join('');
+    $('#winMsg').textContent = stars === 3 ? 'Perfect path!' : 'You used ' + used + ' slot' + (used === 1 ? '' : 's') + '. Try ' + L.par + ' for 3 stars.';
+    const hasNext = LEVELS.some((l) => l.id > L.id);
+    $('#winNext').textContent = hasNext ? 'Next level' : 'All levels';
+    $('#win').hidden = false;
+    $('#winNext').focus();
+  }
+  $('#winNext').addEventListener('click', () => {
+    const idx = LEVELS.findIndex((l) => l.id === state.L.id);
+    if (LEVELS[idx + 1]) startLevel(LEVELS[idx + 1].id); else showMenu();
+  });
+  $('#winAgain').addEventListener('click', () => { $('#win').hidden = true; resetBoard(); });
+  $('#winMenu').addEventListener('click', showMenu);
+
+  /* ---------- hint (shown in the message row, so the layout never shifts) ---------- */
+  function showHint(on) {
+    if (on && state.L.hint) setToast(state.L.hint, 'hint');
+    else setToast('');
+  }
+  $('#hintBtn').addEventListener('click', () => {
+    if (state.running) return;
+    const t = $('#toast');
+    showHint(!t.classList.contains('hint'));
+  });
+
+  /* ---------- level start & wiring ---------- */
+  function startLevel(id) {
+    stopRun();
+    const L = LEVELS.find((l) => l.id === id);
+    state.L = L; state.program = []; state.cursorIn = null;
+    $('#menu').hidden = true;
+    $('#win').hidden = true;
+    $('#game').hidden = false;
+    $('#levelNum').textContent = 'Level ' + L.id;
+    $('#levelName').textContent = L.title;
+    setRunUI(false);
+    setToast('');
+    buildBoard();
+    buildPalette();
+    renderTray();
+    showHint(state.done[L.id] === undefined);
+    fit();
+    requestAnimationFrame(fit);
+  }
+  $('#pads').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-level]');
+    if (b && !b.disabled) { sfx.tap(); startLevel(Number(b.dataset.level)); }
+  });
+  $('#backBtn').addEventListener('click', showMenu);
+  $('#unlockBtn').addEventListener('click', () => { state.unlockAll = !state.unlockAll; save(); renderMenu(); });
+  const toggleSound = () => { state.muted = !state.muted; save(); renderSound(); sfx.tap(); };
+  $('#menuSound').addEventListener('click', toggleSound);
+  let resetTimer = null;
+  $('#resetBtn').addEventListener('click', () => {
+    const b = $('#resetBtn');
+    if (!resetTimer) {
+      b.textContent = 'Tap again to erase all stars';
+      resetTimer = setTimeout(() => { resetTimer = null; b.textContent = 'Reset progress'; }, 4000);
+      return;
+    }
+    clearTimeout(resetTimer); resetTimer = null;
+    state.done = {}; state.unlockAll = false; save(); b.textContent = 'Reset progress'; renderMenu();
+  });
+  $('#soundBtn').addEventListener('click', toggleSound);
+
+  window.addEventListener('resize', fit);
+  window.addEventListener('orientationchange', fit);
+  if (typeof ResizeObserver !== 'undefined') new ResizeObserver(fit).observe($('#boardWrap'));
+
+  /* ---------- static art & first paint ---------- */
+  $('#menuRobot').innerHTML = ART.robot;
+  $('#winRobot').innerHTML = ART.robot;
+  $('#backBtn').innerHTML = ART.ico(P.back);
+  $('#undoBtn').innerHTML = ART.ico(P.undo);
+  $('#clearBtn').innerHTML = ART.ico(P.clear);
+  setRunUI(false);
+  renderMenu();
+})();
+</script>
+
+</body>
+</html>
