@@ -1,0 +1,30 @@
+{
+ "name": "Danyal's Robot",
+ "short_name": "Robot",
+ "start_url": ".",
+ "scope": ".",
+ "display": "standalone",
+ "orientation": "any",
+ "background_color": "#e9f5f1",
+ "theme_color": "#e9f5f1",
+ "icons": [
+  {
+   "src": "icon-192.png",
+   "sizes": "192x192",
+   "type": "image/png",
+   "purpose": "any"
+  },
+  {
+   "src": "icon-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "any"
+  },
+  {
+   "src": "icon-512-maskable.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "maskable"
+  }
+ ]
+}
