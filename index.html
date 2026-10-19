@@ -6,6 +6,9 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Danyal's Robot">
 <meta name="theme-color" content="#e9f5f1">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="apple-touch-icon.png">
 <title>Danyal's Robot</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -472,6 +475,72 @@ button:focus-visible { outline: 4px solid var(--star); outline-offset: 3px; }
     },
     {
       "id": 11,
+      "title": "Monster Alley",
+      "concept": "",
+      "map": ["#.....", "..#...", "......", "....M.", "G..M.R"],
+      "goal": "reach_goal",
+      "blocks": ["up", "down", "left", "right"],
+      "slotLimit": 11,
+      "par": 9,
+      "hint": "Avoid the holes and monsters."
+    },
+    {
+      "id": 12,
+      "title": "Wall Maze",
+      "concept": "",
+      "map": [".*...#", "......", "R..#M.", "...O.G", "...#.."],
+      "goal": "collect_all_then_reach",
+      "blocks": ["up", "down", "left", "right"],
+      "slotLimit": 11,
+      "par": 10,
+      "hint": "Avoid the holes and monsters. Collect every star."
+    },
+    {
+      "id": 13,
+      "title": "Hole Hopper",
+      "concept": "",
+      "map": [".#...#G", "R.O....", "..O.*M.", ".......", "...#..."],
+      "goal": "collect_all_then_reach",
+      "blocks": ["up", "down", "left", "right"],
+      "slotLimit": 13,
+      "par": 11,
+      "hint": "Avoid the holes and monsters. Collect every star."
+    },
+    {
+      "id": 14,
+      "title": "Star Hunt",
+      "concept": "",
+      "map": ["..*...", "......", "....*.", "R..O..", "....OG", "......"],
+      "goal": "collect_all_then_reach",
+      "blocks": ["up", "down", "left", "right"],
+      "slotLimit": 14,
+      "par": 12,
+      "hint": "Avoid the holes and monsters. Collect every star."
+    },
+    {
+      "id": 15,
+      "title": "Sneaky Monsters",
+      "concept": "",
+      "map": [".....R..", "...#.#.M", ".....#O#", ".#.*M...", "....O...", ".......G"],
+      "goal": "collect_all_then_reach",
+      "blocks": ["up", "down", "left", "right"],
+      "slotLimit": 13,
+      "par": 11,
+      "hint": "Avoid the holes and monsters. Collect every star."
+    },
+    {
+      "id": 16,
+      "title": "The Long Road",
+      "concept": "A long trip with arrows only.",
+      "map": ["R.......", "........", "........", "........", "........", ".......G"],
+      "goal": "reach_goal",
+      "blocks": ["up", "down", "left", "right"],
+      "slotLimit": 15,
+      "par": 12,
+      "hint": "A long way! Count the squares: 7 across, then 5 down."
+    },
+    {
+      "id": 17,
       "title": "Do It Again",
       "concept": "First loop: Repeat holds one arrow and runs it several times.",
       "map": [".......", "R.....G", "......."],
@@ -486,7 +555,7 @@ button:focus-visible { outline: 4px solid var(--star); outline-offset: 3px; }
       }
     },
     {
-      "id": 12,
+      "id": 18,
       "title": "Straight Down",
       "concept": "Repeat a vertical arrow.",
       "map": [".R.", "...", "...", "...", "...", "...", ".G."],
@@ -501,22 +570,22 @@ button:focus-visible { outline: 4px solid var(--star); outline-offset: 3px; }
       }
     },
     {
-      "id": 13,
-      "title": "Two Lines",
-      "concept": "Two Repeats in a row.",
-      "map": ["R......", ".......", ".......", "......G"],
+      "id": 19,
+      "title": "Short Road",
+      "concept": "The Long Road again, with Repeat.",
+      "map": ["R.......", "........", "........", "........", "........", ".......G"],
       "goal": "reach_goal",
       "blocks": ["right", "down", "repeat"],
-      "slotLimit": 4,
+      "slotLimit": 2,
       "par": 2,
-      "hint": "Go across, then down. Use a Repeat for each.",
+      "hint": "The Long Road again, but only 2 slots! Use a Repeat for each straight part.",
       "repeat": {
-        "counts": [2, 3, 4, 5, 6],
+        "counts": [2, 3, 4, 5, 6, 7],
         "innerSlots": 1
       }
     },
     {
-      "id": 14,
+      "id": 20,
       "title": "Wall Run",
       "concept": "Order matters when a wall is in the way.",
       "map": ["R..#...", "...#...", "......G"],
@@ -531,7 +600,7 @@ button:focus-visible { outline: 4px solid var(--star); outline-offset: 3px; }
       }
     },
     {
-      "id": 15,
+      "id": 21,
       "title": "Around the Hole",
       "concept": "Repeat plus a detour.",
       "map": [".......", "R...O.G", "......."],
@@ -546,59 +615,7 @@ button:focus-visible { outline: 4px solid var(--star); outline-offset: 3px; }
       }
     },
     {
-      "id": 16,
-      "title": "Stairs",
-      "concept": "A Repeat can hold two arrows.",
-      "map": ["R....", ".....", ".....", ".....", "....G"],
-      "goal": "reach_goal",
-      "blocks": ["right", "down", "repeat"],
-      "slotLimit": 1,
-      "par": 1,
-      "hint": "Only 1 slot! This Repeat holds 2 arrows: right, then down.",
-      "repeat": {
-        "counts": [2, 3, 4, 5],
-        "innerSlots": 2
-      }
-    },
-    {
-      "id": 17,
-      "title": "Star Stairs",
-      "concept": "Stairs with a star on the way.",
-      "map": ["...G.", "..*..", ".....", "R...."],
-      "goal": "collect_all_then_reach",
-      "blocks": ["right", "up", "repeat"],
-      "slotLimit": 1,
-      "par": 1,
-      "hint": "Only 1 slot. Climb the stairs and pick up the star.",
-      "repeat": {
-        "counts": [2, 3, 4, 5],
-        "innerSlots": 2
-      }
-    },
-    {
-      "id": 18,
-      "title": "Wall Maze",
-      "concept": "",
-      "map": [".*...#", "......", "R..#M.", "...O.G", "...#.."],
-      "goal": "collect_all_then_reach",
-      "blocks": ["up", "down", "left", "right"],
-      "slotLimit": 11,
-      "par": 10,
-      "hint": "Avoid the holes and monsters. Collect every star."
-    },
-    {
-      "id": 19,
-      "title": "Monster Alley",
-      "concept": "",
-      "map": ["#.....", "..#...", "......", "....M.", "G..M.R"],
-      "goal": "reach_goal",
-      "blocks": ["up", "down", "left", "right"],
-      "slotLimit": 9,
-      "par": 9,
-      "hint": "Only 9 slots. Avoid the holes and monsters."
-    },
-    {
-      "id": 20,
+      "id": 22,
       "title": "Over and Over",
       "concept": "",
       "map": ["........", "RM.....G", "........"],
@@ -613,18 +630,7 @@ button:focus-visible { outline: 4px solid var(--star); outline-offset: 3px; }
       }
     },
     {
-      "id": 21,
-      "title": "Star Hunt",
-      "concept": "",
-      "map": ["..*...", "......", "....*.", "R..O..", "....OG", "......"],
-      "goal": "collect_all_then_reach",
-      "blocks": ["up", "down", "left", "right"],
-      "slotLimit": 12,
-      "par": 12,
-      "hint": "Only 12 slots. Avoid the holes and monsters. Collect every star."
-    },
-    {
-      "id": 22,
+      "id": 23,
       "title": "Loop the Loop",
       "concept": "",
       "map": [".......", "....M.R", "G....O.", ".......", "*......"],
@@ -639,48 +645,7 @@ button:focus-visible { outline: 4px solid var(--star); outline-offset: 3px; }
       }
     },
     {
-      "id": 23,
-      "title": "Again and Again",
-      "concept": "",
-      "map": ["......", "......", "......", "R.M...", "..O..G", "......"],
-      "goal": "reach_goal",
-      "blocks": ["up", "down", "left", "right", "repeat"],
-      "slotLimit": 2,
-      "par": 2,
-      "hint": "Only 2 slots. A Repeat can hold 2 arrows. Avoid the holes and monsters.",
-      "repeat": {
-        "counts": [2, 3, 4, 5],
-        "innerSlots": 2
-      }
-    },
-    {
       "id": 24,
-      "title": "Hole Hopper",
-      "concept": "",
-      "map": [".#...#G", "R.O....", "..O.*M.", ".......", "...#..."],
-      "goal": "collect_all_then_reach",
-      "blocks": ["up", "down", "left", "right"],
-      "slotLimit": 11,
-      "par": 11,
-      "hint": "Only 11 slots. Avoid the holes and monsters. Collect every star."
-    },
-    {
-      "id": 25,
-      "title": "Round and Round",
-      "concept": "",
-      "map": [".......", ".......", ".....*.", "G..O.OR", ".......", "......."],
-      "goal": "collect_all_then_reach",
-      "blocks": ["up", "down", "left", "right", "repeat"],
-      "slotLimit": 2,
-      "par": 2,
-      "hint": "Only 2 slots. A Repeat can hold 2 arrows. Avoid the holes and monsters. Collect every star.",
-      "repeat": {
-        "counts": [2, 3, 4, 5, 6],
-        "innerSlots": 2
-      }
-    },
-    {
-      "id": 26,
       "title": "Keep Repeating",
       "concept": "",
       "map": ["........", "RO......", ".O....*G", "........", "........"],
@@ -695,37 +660,7 @@ button:focus-visible { outline: 4px solid var(--star); outline-offset: 3px; }
       }
     },
     {
-      "id": 27,
-      "title": "Loop It",
-      "concept": "",
-      "map": [".......", ".......", ".......", "..M*...", "R..O..G", ".O*...."],
-      "goal": "collect_all_then_reach",
-      "blocks": ["up", "down", "left", "right", "repeat"],
-      "slotLimit": 5,
-      "par": 5,
-      "hint": "Only 5 slots. A Repeat can hold 2 arrows. Avoid the holes and monsters. Collect every star.",
-      "repeat": {
-        "counts": [2, 3, 4, 5, 6],
-        "innerSlots": 2
-      }
-    },
-    {
-      "id": 28,
-      "title": "Repeat Pro",
-      "concept": "",
-      "map": [".......", ".......", ".......", ".......", "O.*..M.", "G..O..R"],
-      "goal": "collect_all_then_reach",
-      "blocks": ["up", "down", "left", "right", "repeat"],
-      "slotLimit": 3,
-      "par": 3,
-      "hint": "Only 3 slots. A Repeat can hold 2 arrows. Avoid the holes and monsters. Collect every star.",
-      "repeat": {
-        "counts": [2, 3, 4, 5, 6],
-        "innerSlots": 2
-      }
-    },
-    {
-      "id": 29,
+      "id": 25,
       "title": "Never Stop",
       "concept": "",
       "map": ["..O..O#.", "R..#...G", "....M...", ".....#..", ".#.*...."],
@@ -740,22 +675,7 @@ button:focus-visible { outline: 4px solid var(--star); outline-offset: 3px; }
       }
     },
     {
-      "id": 30,
-      "title": "Plan Ahead",
-      "concept": "",
-      "map": [".......", ".......", ".......", ".......", "R..O...", "....M.G"],
-      "goal": "reach_goal",
-      "blocks": ["up", "down", "left", "right", "repeat"],
-      "slotLimit": 2,
-      "par": 2,
-      "hint": "Only 2 slots. A Repeat can hold 3 arrows. Avoid the holes and monsters.",
-      "repeat": {
-        "counts": [2, 3, 4, 5, 6],
-        "innerSlots": 3
-      }
-    },
-    {
-      "id": 31,
+      "id": 26,
       "title": "Star Trail",
       "concept": "",
       "map": ["G.....OR", ".OM.....", "....*...", "...*....", "........", "........"],
@@ -770,7 +690,93 @@ button:focus-visible { outline: 4px solid var(--star); outline-offset: 3px; }
       }
     },
     {
+      "id": 27,
+      "title": "Staircase",
+      "concept": "Stairs by hand.",
+      "map": ["R....", "#*...", "##*..", "###*.", "####G"],
+      "goal": "collect_all_then_reach",
+      "blocks": ["up", "down", "left", "right"],
+      "slotLimit": 11,
+      "par": 8,
+      "hint": "Walk down the stairs: right, down, right, down... Pick up every star."
+    },
+    {
+      "id": 28,
+      "title": "Stairs",
+      "concept": "A Repeat can hold two arrows.",
+      "map": ["R....", "#*...", "##*..", "###*.", "####G"],
+      "goal": "collect_all_then_reach",
+      "blocks": ["right", "down", "repeat"],
+      "slotLimit": 1,
+      "par": 1,
+      "hint": "Same stairs, only 1 slot! Put right AND down inside one Repeat.",
+      "repeat": {
+        "counts": [2, 3, 4, 5],
+        "innerSlots": 2
+      }
+    },
+    {
+      "id": 29,
+      "title": "Star Stairs",
+      "concept": "Stairs with a star on the way.",
+      "map": ["...G.", "..*..", ".....", "R...."],
+      "goal": "collect_all_then_reach",
+      "blocks": ["right", "up", "repeat"],
+      "slotLimit": 1,
+      "par": 1,
+      "hint": "Only 1 slot. Climb the stairs and pick up the star.",
+      "repeat": {
+        "counts": [2, 3, 4, 5],
+        "innerSlots": 2
+      }
+    },
+    {
+      "id": 30,
+      "title": "Stairs and Hall",
+      "concept": "",
+      "map": ["R......", "#*.....", "##*....", "###*..G"],
+      "goal": "collect_all_then_reach",
+      "blocks": ["up", "down", "left", "right", "repeat"],
+      "slotLimit": 2,
+      "par": 2,
+      "hint": "Down the stairs, then along the floor. 2 slots.",
+      "repeat": {
+        "counts": [2, 3, 4, 5],
+        "innerSlots": 2
+      }
+    },
+    {
+      "id": 31,
+      "title": "Hall and Stairs",
+      "concept": "",
+      "map": ["G......", "#*.....", "##*....", "###*..R"],
+      "goal": "collect_all_then_reach",
+      "blocks": ["up", "down", "left", "right", "repeat"],
+      "slotLimit": 2,
+      "par": 2,
+      "hint": "Along the floor, then up the stairs. 2 slots.",
+      "repeat": {
+        "counts": [2, 3, 4, 5],
+        "innerSlots": 2
+      }
+    },
+    {
       "id": 32,
+      "title": "Repeat Pro",
+      "concept": "",
+      "map": [".......", ".......", ".......", ".......", "O.*..M.", "G..O..R"],
+      "goal": "collect_all_then_reach",
+      "blocks": ["up", "down", "left", "right", "repeat"],
+      "slotLimit": 3,
+      "par": 3,
+      "hint": "Only 3 slots. A Repeat can hold 2 arrows. Avoid the holes and monsters. Collect every star.",
+      "repeat": {
+        "counts": [2, 3, 4, 5, 6],
+        "innerSlots": 2
+      }
+    },
+    {
+      "id": 33,
       "title": "Monster Dodge",
       "concept": "",
       "map": ["..*....", ".....#.", ".#.....", "GM....#", "#......", ".O....R", "..#..MO"],
@@ -785,48 +791,149 @@ button:focus-visible { outline: 4px solid var(--star); outline-offset: 3px; }
       }
     },
     {
-      "id": 33,
-      "title": "Star Catcher",
-      "concept": "",
-      "map": ["G.....OR", "O.*..M..", ".....*..", "........", "........", "........"],
-      "goal": "collect_all_then_reach",
-      "blocks": ["up", "down", "left", "right", "repeat"],
-      "slotLimit": 3,
-      "par": 3,
-      "hint": "Only 3 slots. A Repeat can hold 2 arrows. Avoid the holes and monsters. Collect every star.",
-      "repeat": {
-        "counts": [2, 3, 4, 5, 6, 7],
-        "innerSlots": 2
-      }
-    },
-    {
       "id": 34,
-      "title": "Sneaky Monsters",
-      "concept": "",
-      "map": [".....R..", "...#.#.M", ".....#O#", ".#.*M...", "....O...", ".......G"],
+      "title": "Mountain Walk",
+      "concept": "Up the mountain and down again, by hand.",
+      "map": ["...*...", "..*.*..", ".*.##*.", "R.####G"],
       "goal": "collect_all_then_reach",
       "blocks": ["up", "down", "left", "right"],
-      "slotLimit": 11,
-      "par": 11,
-      "hint": "Only 11 slots. Avoid the holes and monsters. Collect every star."
+      "slotLimit": 15,
+      "par": 12,
+      "hint": "Climb the mountain step by step and pick up every star."
     },
     {
       "id": 35,
-      "title": "Mind the Gaps",
+      "title": "Mountain",
       "concept": "",
-      "map": ["..*....", "...M...", "RO...OG", ".......", ".......", "......."],
+      "map": ["...*...", "..*.*..", ".*.##*.", "R.####G"],
       "goal": "collect_all_then_reach",
       "blocks": ["up", "down", "left", "right", "repeat"],
       "slotLimit": 2,
       "par": 2,
-      "hint": "Only 2 slots. A Repeat can hold 3 arrows. Avoid the holes and monsters. Collect every star.",
+      "hint": "Same mountain, only 2 slots: one Repeat to climb up, one to climb down.",
+      "repeat": {
+        "counts": [2, 3, 4, 5],
+        "innerSlots": 2
+      }
+    },
+    {
+      "id": 36,
+      "title": "Valley",
+      "concept": "",
+      "map": ["R.OOOOG", "...OO..", ".......", "...*..."],
+      "goal": "collect_all_then_reach",
+      "blocks": ["up", "down", "left", "right", "repeat"],
+      "slotLimit": 2,
+      "par": 2,
+      "hint": "The holes make a valley. Stairs down, then stairs up. 2 slots.",
+      "repeat": {
+        "counts": [2, 3, 4, 5],
+        "innerSlots": 2
+      }
+    },
+    {
+      "id": 37,
+      "title": "Again and Again",
+      "concept": "",
+      "map": ["......", "......", "......", "R.M...", "..O..G", "......"],
+      "goal": "reach_goal",
+      "blocks": ["up", "down", "left", "right", "repeat"],
+      "slotLimit": 2,
+      "par": 2,
+      "hint": "Only 2 slots. Climb over the monster with stairs, then take stairs down.",
+      "repeat": {
+        "counts": [2, 3, 4, 5],
+        "innerSlots": 2
+      }
+    },
+    {
+      "id": 38,
+      "title": "Round and Round",
+      "concept": "",
+      "map": [".......", ".......", ".....*.", "G..O.OR", ".......", "......."],
+      "goal": "collect_all_then_reach",
+      "blocks": ["up", "down", "left", "right", "repeat"],
+      "slotLimit": 2,
+      "par": 2,
+      "hint": "Only 2 slots. A Repeat can hold 2 arrows. Avoid the holes and monsters. Collect every star.",
+      "repeat": {
+        "counts": [2, 3, 4, 5, 6],
+        "innerSlots": 2
+      }
+    },
+    {
+      "id": 39,
+      "title": "Long Steps by Hand",
+      "concept": "",
+      "map": ["R......", "##*....", "####*..", "######G"],
+      "goal": "collect_all_then_reach",
+      "blocks": ["up", "down", "left", "right"],
+      "slotLimit": 12,
+      "par": 9,
+      "hint": "Each step is two squares wide: right, right, down."
+    },
+    {
+      "id": 40,
+      "title": "Long Steps",
+      "concept": "",
+      "map": ["R......", "##*....", "####*..", "######G"],
+      "goal": "collect_all_then_reach",
+      "blocks": ["right", "down", "repeat"],
+      "slotLimit": 1,
+      "par": 1,
+      "hint": "Same steps, 1 slot. This Repeat holds 3 arrows: right, right, down.",
+      "repeat": {
+        "counts": [2, 3, 4, 5],
+        "innerSlots": 3
+      }
+    },
+    {
+      "id": 41,
+      "title": "Steep Steps",
+      "concept": "",
+      "map": ["R...", "....", ".*..", "#...", "#.*.", "##..", "##.G"],
+      "goal": "collect_all_then_reach",
+      "blocks": ["up", "down", "left", "right", "repeat"],
+      "slotLimit": 1,
+      "par": 1,
+      "hint": "Each step is two squares tall: down, down, right. 1 slot.",
+      "repeat": {
+        "counts": [2, 3, 4, 5],
+        "innerSlots": 3
+      }
+    },
+    {
+      "id": 42,
+      "title": "Plan Ahead",
+      "concept": "",
+      "map": [".......", ".......", ".......", ".......", "R..O...", "....M.G"],
+      "goal": "reach_goal",
+      "blocks": ["up", "down", "left", "right", "repeat"],
+      "slotLimit": 2,
+      "par": 2,
+      "hint": "Only 2 slots. A Repeat can hold 3 arrows. Avoid the holes and monsters.",
       "repeat": {
         "counts": [2, 3, 4, 5, 6],
         "innerSlots": 3
       }
     },
     {
-      "id": 36,
+      "id": 43,
+      "title": "Loop It",
+      "concept": "",
+      "map": [".......", ".......", ".......", "..M*...", "R..O..G", ".O*...."],
+      "goal": "collect_all_then_reach",
+      "blocks": ["up", "down", "left", "right", "repeat"],
+      "slotLimit": 5,
+      "par": 5,
+      "hint": "Only 5 slots. A Repeat can hold 2 arrows. Avoid the holes and monsters. Collect every star.",
+      "repeat": {
+        "counts": [2, 3, 4, 5, 6],
+        "innerSlots": 2
+      }
+    },
+    {
+      "id": 44,
       "title": "Shiny Stars",
       "concept": "",
       "map": ["........", "G.*...M.", "...O...*", "........", ".......O", "......OR", "........"],
@@ -841,52 +948,7 @@ button:focus-visible { outline: 4px solid var(--star); outline-offset: 3px; }
       }
     },
     {
-      "id": 37,
-      "title": "Star Run",
-      "concept": "",
-      "map": [".R*...*", "..##...", ".M.....", "O......", "......#", "O.O..*.", ".G..#.."],
-      "goal": "collect_all_then_reach",
-      "blocks": ["up", "down", "left", "right", "repeat"],
-      "slotLimit": 6,
-      "par": 6,
-      "hint": "Only 6 slots. Use Repeat. Avoid the holes and monsters. Collect every star.",
-      "repeat": {
-        "counts": [2, 3, 4, 5, 6],
-        "innerSlots": 1
-      }
-    },
-    {
-      "id": 38,
-      "title": "Star Path",
-      "concept": "",
-      "map": ["........", ".......*", "........", "G.O....R", ".OM...OM", "........", "......*."],
-      "goal": "collect_all_then_reach",
-      "blocks": ["up", "down", "left", "right", "repeat"],
-      "slotLimit": 6,
-      "par": 6,
-      "hint": "Only 6 slots. Use Repeat. Avoid the holes and monsters. Collect every star.",
-      "repeat": {
-        "counts": [2, 3, 4, 5, 6, 7],
-        "innerSlots": 1
-      }
-    },
-    {
-      "id": 39,
-      "title": "Watch Your Step",
-      "concept": "",
-      "map": ["........", "........", "........", "..O.M...", "GO*....R", "........"],
-      "goal": "collect_all_then_reach",
-      "blocks": ["up", "down", "left", "right", "repeat"],
-      "slotLimit": 3,
-      "par": 3,
-      "hint": "Only 3 slots. A Repeat can hold 3 arrows. Avoid the holes and monsters. Collect every star.",
-      "repeat": {
-        "counts": [2, 3, 4, 5, 6, 7],
-        "innerSlots": 3
-      }
-    },
-    {
-      "id": 40,
+      "id": 45,
       "title": "Monster Maze",
       "concept": "",
       "map": ["G#O.....", "..*.M...", "###O*...", "...O...R", "......M.", "......#.", "...#...."],
@@ -901,97 +963,7 @@ button:focus-visible { outline: 4px solid var(--star); outline-offset: 3px; }
       }
     },
     {
-      "id": 41,
-      "title": "Monster Town",
-      "concept": "",
-      "map": ["........", ".*......", "........", "........", "R.O..MOG", "O....*.M", "........"],
-      "goal": "collect_all_then_reach",
-      "blocks": ["up", "down", "left", "right", "repeat"],
-      "slotLimit": 5,
-      "par": 5,
-      "hint": "Only 5 slots. A Repeat can hold 2 arrows. Avoid the holes and monsters. Collect every star.",
-      "repeat": {
-        "counts": [2, 3, 4, 5, 6, 7],
-        "innerSlots": 2
-      }
-    },
-    {
-      "id": 42,
-      "title": "Hole Maze",
-      "concept": "",
-      "map": ["........", "O.....*.", "GM.O.O.R", "........", "........", "........", "..*....."],
-      "goal": "collect_all_then_reach",
-      "blocks": ["up", "down", "left", "right", "repeat"],
-      "slotLimit": 3,
-      "par": 3,
-      "hint": "Only 3 slots. A Repeat can hold 3 arrows. Avoid the holes and monsters. Collect every star.",
-      "repeat": {
-        "counts": [2, 3, 4, 5, 6, 7],
-        "innerSlots": 3
-      }
-    },
-    {
-      "id": 43,
-      "title": "Deep Holes",
-      "concept": "",
-      "map": [".#*....*", ".......#", "....#...", "..O....G", "RO##MM..", "#...O...", ".......*"],
-      "goal": "collect_all_then_reach",
-      "blocks": ["up", "down", "left", "right", "repeat"],
-      "slotLimit": 5,
-      "par": 5,
-      "hint": "Only 5 slots. A Repeat can hold 3 arrows. Avoid the holes and monsters. Collect every star.",
-      "repeat": {
-        "counts": [2, 3, 4, 5, 6, 7],
-        "innerSlots": 3
-      }
-    },
-    {
-      "id": 44,
-      "title": "Clever Robot",
-      "concept": "",
-      "map": ["........", "O....*O.", "G....M.R", "..*O..M.", "........", "...*....", "........"],
-      "goal": "collect_all_then_reach",
-      "blocks": ["up", "down", "left", "right", "repeat"],
-      "slotLimit": 5,
-      "par": 5,
-      "hint": "Only 5 slots. A Repeat can hold 2 arrows. Avoid the holes and monsters. Collect every star.",
-      "repeat": {
-        "counts": [2, 3, 4, 5, 6, 7],
-        "innerSlots": 2
-      }
-    },
-    {
-      "id": 45,
-      "title": "Long Way Round",
-      "concept": "",
-      "map": ["G.OOM.MR", ".O.*....", "........", "........", "........", "........", "*......."],
-      "goal": "collect_all_then_reach",
-      "blocks": ["up", "down", "left", "right", "repeat"],
-      "slotLimit": 4,
-      "par": 4,
-      "hint": "Only 4 slots. A Repeat can hold 3 arrows. Avoid the holes and monsters. Collect every star.",
-      "repeat": {
-        "counts": [2, 3, 4, 5, 6, 7],
-        "innerSlots": 3
-      }
-    },
-    {
       "id": 46,
-      "title": "Tiny Tray",
-      "concept": "",
-      "map": [".R......", ".M....*.", ".M......", "*.....*.", "O.O.....", "..O.....", "G......."],
-      "goal": "collect_all_then_reach",
-      "blocks": ["up", "down", "left", "right", "repeat"],
-      "slotLimit": 6,
-      "par": 6,
-      "hint": "Only 6 slots. Use Repeat. Avoid the holes and monsters. Collect every star.",
-      "repeat": {
-        "counts": [2, 3, 4, 5, 6, 7],
-        "innerSlots": 1
-      }
-    },
-    {
-      "id": 47,
       "title": "Tricky Corner",
       "concept": "",
       "map": ["..*.....", "##.*.#..", ".....#..", "*.......", "..#OO..G", "..M.#...", "RM.OM..#"],
@@ -1003,6 +975,21 @@ button:focus-visible { outline: 4px solid var(--star); outline-offset: 3px; }
       "repeat": {
         "counts": [2, 3, 4, 5, 6, 7],
         "innerSlots": 2
+      }
+    },
+    {
+      "id": 47,
+      "title": "Star Run",
+      "concept": "",
+      "map": [".R*...*", "..##...", ".M.....", "O......", "......#", "O.O..*.", ".G..#.."],
+      "goal": "collect_all_then_reach",
+      "blocks": ["up", "down", "left", "right", "repeat"],
+      "slotLimit": 6,
+      "par": 6,
+      "hint": "Only 6 slots. Use Repeat. Avoid the holes and monsters. Collect every star.",
+      "repeat": {
+        "counts": [2, 3, 4, 5, 6],
+        "innerSlots": 1
       }
     },
     {
@@ -1022,6 +1009,21 @@ button:focus-visible { outline: 4px solid var(--star); outline-offset: 3px; }
     },
     {
       "id": 49,
+      "title": "Monster Town",
+      "concept": "",
+      "map": ["........", ".*......", "........", "........", "R.O..MOG", "O....*.M", "........"],
+      "goal": "collect_all_then_reach",
+      "blocks": ["up", "down", "left", "right", "repeat"],
+      "slotLimit": 5,
+      "par": 5,
+      "hint": "Only 5 slots. A Repeat can hold 2 arrows. Avoid the holes and monsters. Collect every star.",
+      "repeat": {
+        "counts": [2, 3, 4, 5, 6, 7],
+        "innerSlots": 2
+      }
+    },
+    {
+      "id": 50,
       "title": "Think First",
       "concept": "",
       "map": ["........", "........", "......**", "...*...M", "G.O.O...", "O..O...R", ".....M.."],
@@ -1036,7 +1038,97 @@ button:focus-visible { outline: 4px solid var(--star); outline-offset: 3px; }
       }
     },
     {
-      "id": 50,
+      "id": 51,
+      "title": "Star Path",
+      "concept": "",
+      "map": ["........", ".......*", "........", "G.O....R", ".OM...OM", "........", "......*."],
+      "goal": "collect_all_then_reach",
+      "blocks": ["up", "down", "left", "right", "repeat"],
+      "slotLimit": 6,
+      "par": 6,
+      "hint": "Only 6 slots. Use Repeat. Avoid the holes and monsters. Collect every star.",
+      "repeat": {
+        "counts": [2, 3, 4, 5, 6, 7],
+        "innerSlots": 1
+      }
+    },
+    {
+      "id": 52,
+      "title": "Star Catcher",
+      "concept": "",
+      "map": ["G.....OR", "O.*..M..", ".....*..", "........", "........", "........"],
+      "goal": "collect_all_then_reach",
+      "blocks": ["up", "down", "left", "right", "repeat"],
+      "slotLimit": 3,
+      "par": 3,
+      "hint": "Only 3 slots. A Repeat can hold 2 arrows. Avoid the holes and monsters. Collect every star.",
+      "repeat": {
+        "counts": [2, 3, 4, 5, 6, 7],
+        "innerSlots": 2
+      }
+    },
+    {
+      "id": 53,
+      "title": "Mind the Gaps",
+      "concept": "",
+      "map": ["..*....", "...M...", "RO...OG", ".......", ".......", "......."],
+      "goal": "collect_all_then_reach",
+      "blocks": ["up", "down", "left", "right", "repeat"],
+      "slotLimit": 2,
+      "par": 2,
+      "hint": "Only 2 slots. A Repeat can hold 3 arrows. Avoid the holes and monsters. Collect every star.",
+      "repeat": {
+        "counts": [2, 3, 4, 5, 6],
+        "innerSlots": 3
+      }
+    },
+    {
+      "id": 54,
+      "title": "Clever Robot",
+      "concept": "",
+      "map": ["........", "O....*O.", "G....M.R", "..*O..M.", "........", "...*....", "........"],
+      "goal": "collect_all_then_reach",
+      "blocks": ["up", "down", "left", "right", "repeat"],
+      "slotLimit": 5,
+      "par": 5,
+      "hint": "Only 5 slots. A Repeat can hold 2 arrows. Avoid the holes and monsters. Collect every star.",
+      "repeat": {
+        "counts": [2, 3, 4, 5, 6, 7],
+        "innerSlots": 2
+      }
+    },
+    {
+      "id": 55,
+      "title": "Watch Your Step",
+      "concept": "",
+      "map": ["........", "........", "........", "..O.M...", "GO*....R", "........"],
+      "goal": "collect_all_then_reach",
+      "blocks": ["up", "down", "left", "right", "repeat"],
+      "slotLimit": 3,
+      "par": 3,
+      "hint": "Only 3 slots. A Repeat can hold 3 arrows. Avoid the holes and monsters. Collect every star.",
+      "repeat": {
+        "counts": [2, 3, 4, 5, 6, 7],
+        "innerSlots": 3
+      }
+    },
+    {
+      "id": 56,
+      "title": "Tiny Tray",
+      "concept": "",
+      "map": [".R......", ".M....*.", ".M......", "*.....*.", "O.O.....", "..O.....", "G......."],
+      "goal": "collect_all_then_reach",
+      "blocks": ["up", "down", "left", "right", "repeat"],
+      "slotLimit": 6,
+      "par": 6,
+      "hint": "Only 6 slots. Use Repeat. Avoid the holes and monsters. Collect every star.",
+      "repeat": {
+        "counts": [2, 3, 4, 5, 6, 7],
+        "innerSlots": 1
+      }
+    },
+    {
+      "id": 57,
       "title": "Narrow Gap",
       "concept": "",
       "map": ["*.M.#MOO", "G..M...R", "##..OO..", "#.......", "........", "..#.#.#.", "*......*"],
@@ -1048,6 +1140,51 @@ button:focus-visible { outline: 4px solid var(--star); outline-offset: 3px; }
       "repeat": {
         "counts": [2, 3, 4, 5, 6, 7],
         "innerSlots": 2
+      }
+    },
+    {
+      "id": 58,
+      "title": "Hole Maze",
+      "concept": "",
+      "map": ["........", "O.....*.", "GM.O.O.R", "........", "........", "........", "..*....."],
+      "goal": "collect_all_then_reach",
+      "blocks": ["up", "down", "left", "right", "repeat"],
+      "slotLimit": 3,
+      "par": 3,
+      "hint": "Only 3 slots. A Repeat can hold 3 arrows. Avoid the holes and monsters. Collect every star.",
+      "repeat": {
+        "counts": [2, 3, 4, 5, 6, 7],
+        "innerSlots": 3
+      }
+    },
+    {
+      "id": 59,
+      "title": "Deep Holes",
+      "concept": "",
+      "map": [".#*....*", ".......#", "....#...", "..O....G", "RO##MM..", "#...O...", ".......*"],
+      "goal": "collect_all_then_reach",
+      "blocks": ["up", "down", "left", "right", "repeat"],
+      "slotLimit": 5,
+      "par": 5,
+      "hint": "Only 5 slots. A Repeat can hold 3 arrows. Avoid the holes and monsters. Collect every star.",
+      "repeat": {
+        "counts": [2, 3, 4, 5, 6, 7],
+        "innerSlots": 3
+      }
+    },
+    {
+      "id": 60,
+      "title": "Long Way Round",
+      "concept": "",
+      "map": ["G.OOM.MR", ".O.*....", "........", "........", "........", "........", "*......."],
+      "goal": "collect_all_then_reach",
+      "blocks": ["up", "down", "left", "right", "repeat"],
+      "slotLimit": 4,
+      "par": 4,
+      "hint": "Only 4 slots. A Repeat can hold 3 arrows. Avoid the holes and monsters. Collect every star.",
+      "repeat": {
+        "counts": [2, 3, 4, 5, 6, 7],
+        "innerSlots": 3
       }
     }
   ]
@@ -1189,7 +1326,7 @@ button:focus-visible { outline: 4px solid var(--star); outline-offset: 3px; }
   window.RobotGame = { LEVELS, simulate, flatten, rate, usedBlocks };
 
   /* ---------- state & storage ---------- */
-  const KEY = 'danyals-robot-v1';
+  const KEY = 'danyals-robot-v2';
   const state = { L: null, program: [], cursorIn: null, running: false, token: 0, done: {}, unlockAll: false, muted: false, robot: null, starEls: {}, hazEls: {}, goalEl: null };
   try {
     const saved = JSON.parse(localStorage.getItem(KEY) || '{}');
