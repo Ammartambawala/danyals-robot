@@ -254,6 +254,37 @@ button:focus-visible { outline: 4px solid var(--star); outline-offset: 3px; }
   :root { --slot: 56px; }
 }
 
+/* ---------- Grown-ups: passcode + solution manual ---------- */
+.lock-card { width: 100%; max-width: 320px; background: var(--panel); border-radius: 28px; padding: 20px; display: flex; flex-direction: column; align-items: center; gap: 12px; box-shadow: 0 8px 0 var(--line); text-align: center; }
+.lock-card h2 { margin: 0; font-family: var(--font-display); font-size: 26px; font-weight: 700; }
+.lock-card p { margin: 0; color: var(--ink-soft); font-size: 15px; min-height: 1.4em; }
+.lock-dots { display: flex; gap: 12px; }
+.lock-dots span { width: 16px; height: 16px; border-radius: 50%; border: 2.5px solid var(--ink-soft); }
+.lock-dots span.on { background: var(--ink); border-color: var(--ink); }
+.lock-dots.shake { animation: shake .4s ease; }
+.keypad { display: grid; grid-template-columns: repeat(3, 64px); gap: 10px; }
+.keypad button { height: 56px; border-radius: 16px; border: 3px solid var(--line); background: var(--panel); font-family: var(--font-display); font-size: 24px; font-weight: 700; }
+.keypad button:active { transform: translateY(2px); }
+.sol-intro { margin: 0; color: var(--ink-soft); font-size: 14px; line-height: 1.4; }
+.sol-list { display: flex; flex-direction: column; gap: 10px; padding-bottom: 16px; }
+.sol-item { display: flex; gap: 14px; align-items: flex-start; background: var(--panel); border: 3px solid var(--line); border-radius: 20px; padding: 12px; }
+.sol-map { display: grid; gap: 1px; flex: none; background: var(--line); border-radius: 6px; overflow: hidden; }
+.sol-map i { width: 13px; height: 13px; background: var(--tile-a, #e3f1ec); display: block; }
+.sol-map i.w { background: var(--wall); }
+.sol-map i.o { background: radial-gradient(circle, var(--pit) 55%, transparent 58%), #e3f1ec; }
+.sol-map i.m { background: radial-gradient(circle, var(--monster) 60%, transparent 63%), #e3f1ec; }
+.sol-map i.s { background: radial-gradient(circle, var(--star) 55%, transparent 58%), #e3f1ec; }
+.sol-map i.r { background: var(--robot); border-radius: 3px; }
+.sol-map i.g { background: var(--go); border-radius: 3px; }
+.sol-body { min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.sol-body h3 { margin: 0; font-family: var(--font-display); font-size: 18px; font-weight: 700; }
+.sol-body h3 small { color: var(--ink-soft); font-size: 13px; font-family: var(--font-body); font-weight: 800; }
+.sol-tray { display: flex; flex-wrap: wrap; gap: 5px; }
+.sol-tray span { display: inline-flex; align-items: center; gap: 3px; padding: 3px 8px; border-radius: 10px; background: var(--arrow); color: #fff; font-size: 15px; font-weight: 800; font-family: system-ui, sans-serif; }
+.sol-tray span.rep { background: var(--repeat); }
+.sol-words, .sol-hint { margin: 0; font-size: 13px; color: var(--ink-soft); line-height: 1.35; }
+.sol-play { align-self: flex-start; font-size: 13px; font-weight: 800; color: var(--arrow-deep); text-decoration: underline; padding: 2px 0; }
+
 /* ---------- Win ---------- */
 .overlay { position: fixed; inset: 0; z-index: 20; background: rgba(22, 49, 75, .5); display: grid; place-items: center; padding: 16px; }
 .win-card {
@@ -304,7 +335,17 @@ button:focus-visible { outline: 4px solid var(--star); outline-offset: 3px; }
       <button class="link" id="unlockBtn" type="button"></button>
       <button class="link" id="menuSound" type="button"></button>
       <button class="link" id="resetBtn" type="button">Reset progress</button>
+      <button class="link" id="adultBtn" type="button">For grown-ups</button>
     </div>
+  </section>
+
+  <section id="sol" class="screen" hidden>
+    <header class="bar">
+      <button class="icon-btn" id="solBack" type="button" aria-label="Back to levels"></button>
+      <div class="bar-title"><h2>Solution manual</h2><span>For grown-ups</span></div>
+    </header>
+    <p class="sol-intro">One way to solve each level with the fewest slots. Purple = a Repeat: <b>×3 → ↓</b> means right then down, done 3 times. Some levels have other answers too.</p>
+    <div class="sol-list" id="solList"></div>
   </section>
 
   <section id="game" class="screen" hidden>
@@ -346,6 +387,25 @@ button:focus-visible { outline: 4px solid var(--star); outline-offset: 3px; }
   </div>
 </div>
 
+<div class="overlay" id="lock" hidden role="dialog" aria-modal="true" aria-labelledby="lockTitle">
+  <div class="lock-card">
+    <h2 id="lockTitle">For grown-ups</h2>
+    <p id="lockMsg">Enter the passcode</p>
+    <div class="lock-dots" id="lockDots"><span></span><span></span><span></span><span></span><span></span></div>
+    <div class="keypad" id="keypad">
+      <button type="button" data-k="1">1</button><button type="button" data-k="2">2</button><button type="button" data-k="3">3</button>
+      <button type="button" data-k="4">4</button><button type="button" data-k="5">5</button><button type="button" data-k="6">6</button>
+      <button type="button" data-k="7">7</button><button type="button" data-k="8">8</button><button type="button" data-k="9">9</button>
+      <button type="button" data-k="x" aria-label="Cancel">✕</button><button type="button" data-k="0">0</button><button type="button" data-k="b" aria-label="Delete">⌫</button>
+    </div>
+  </div>
+</div>
+
+<!-- SOLUTION DATA: one fewest-slot solution per level id (shown in the grown-ups manual). -->
+<script type="application/json" id="solution-data">
+{"1":[{"t":"move","d":"right"},{"t":"move","d":"right"},{"t":"move","d":"right"}],"2":[{"t":"move","d":"down"},{"t":"move","d":"down"},{"t":"move","d":"down"}],"3":[{"t":"move","d":"right"},{"t":"move","d":"right"},{"t":"move","d":"down"},{"t":"move","d":"down"}],"4":[{"t":"move","d":"right"},{"t":"move","d":"down"},{"t":"move","d":"right"},{"t":"move","d":"right"},{"t":"move","d":"up"}],"5":[{"t":"move","d":"right"},{"t":"move","d":"right"},{"t":"move","d":"down"},{"t":"move","d":"down"},{"t":"move","d":"right"}],"6":[{"t":"move","d":"up"},{"t":"move","d":"right"},{"t":"move","d":"right"},{"t":"move","d":"right"},{"t":"move","d":"right"},{"t":"move","d":"down"}],"7":[{"t":"move","d":"left"},{"t":"move","d":"down"},{"t":"move","d":"down"},{"t":"move","d":"down"},{"t":"move","d":"right"},{"t":"move","d":"down"}],"8":[{"t":"move","d":"right"},{"t":"move","d":"down"},{"t":"move","d":"right"},{"t":"move","d":"right"},{"t":"move","d":"up"},{"t":"move","d":"right"}],"9":[{"t":"move","d":"right"},{"t":"move","d":"down"},{"t":"move","d":"down"},{"t":"move","d":"right"},{"t":"move","d":"right"},{"t":"move","d":"up"},{"t":"move","d":"right"}],"10":[{"t":"move","d":"up"},{"t":"move","d":"up"},{"t":"move","d":"up"},{"t":"move","d":"right"},{"t":"move","d":"right"},{"t":"move","d":"right"},{"t":"move","d":"right"},{"t":"move","d":"down"},{"t":"move","d":"down"}],"11":[{"t":"move","d":"up"},{"t":"move","d":"up"},{"t":"move","d":"left"},{"t":"move","d":"left"},{"t":"move","d":"left"},{"t":"move","d":"left"},{"t":"move","d":"left"},{"t":"move","d":"down"},{"t":"move","d":"down"}],"12":[{"t":"move","d":"up"},{"t":"move","d":"up"},{"t":"move","d":"right"},{"t":"move","d":"right"},{"t":"move","d":"right"},{"t":"move","d":"right"},{"t":"move","d":"down"},{"t":"move","d":"right"},{"t":"move","d":"down"},{"t":"move","d":"down"}],"13":[{"t":"move","d":"right"},{"t":"move","d":"down"},{"t":"move","d":"down"},{"t":"move","d":"right"},{"t":"move","d":"right"},{"t":"move","d":"up"},{"t":"move","d":"right"},{"t":"move","d":"up"},{"t":"move","d":"right"},{"t":"move","d":"right"},{"t":"move","d":"up"}],"14":[{"t":"move","d":"up"},{"t":"move","d":"up"},{"t":"move","d":"up"},{"t":"move","d":"right"},{"t":"move","d":"right"},{"t":"move","d":"right"},{"t":"move","d":"right"},{"t":"move","d":"down"},{"t":"move","d":"down"},{"t":"move","d":"right"},{"t":"move","d":"down"},{"t":"move","d":"down"}],"15":[{"t":"move","d":"left"},{"t":"move","d":"down"},{"t":"move","d":"down"},{"t":"move","d":"left"},{"t":"move","d":"down"},{"t":"move","d":"down"},{"t":"move","d":"down"},{"t":"move","d":"right"},{"t":"move","d":"right"},{"t":"move","d":"right"},{"t":"move","d":"right"}],"16":[{"t":"move","d":"right"},{"t":"move","d":"right"},{"t":"move","d":"right"},{"t":"move","d":"right"},{"t":"move","d":"right"},{"t":"move","d":"right"},{"t":"move","d":"right"},{"t":"move","d":"down"},{"t":"move","d":"down"},{"t":"move","d":"down"},{"t":"move","d":"down"},{"t":"move","d":"down"}],"17":[{"t":"repeat","n":6,"body":[{"d":"right"}]}],"18":[{"t":"repeat","n":6,"body":[{"d":"down"}]}],"19":[{"t":"repeat","n":7,"body":[{"d":"right"}]},{"t":"repeat","n":5,"body":[{"d":"down"}]}],"20":[{"t":"repeat","n":2,"body":[{"d":"down"}]},{"t":"repeat","n":6,"body":[{"d":"right"}]}],"21":[{"t":"move","d":"down"},{"t":"repeat","n":6,"body":[{"d":"right"}]},{"t":"move","d":"up"}],"22":[{"t":"move","d":"down"},{"t":"repeat","n":7,"body":[{"d":"right"}]},{"t":"move","d":"up"}],"23":[{"t":"repeat","n":3,"body":[{"d":"down"}]},{"t":"repeat","n":6,"body":[{"d":"left"}]},{"t":"repeat","n":2,"body":[{"d":"up"}]}],"24":[{"t":"repeat","n":2,"body":[{"d":"down"}]},{"t":"repeat","n":6,"body":[{"d":"right"}]},{"t":"move","d":"up"},{"t":"move","d":"right"}],"25":[{"t":"repeat","n":2,"body":[{"d":"right"}]},{"t":"repeat","n":3,"body":[{"d":"down"}]},{"t":"repeat","n":5,"body":[{"d":"right"}]},{"t":"repeat","n":3,"body":[{"d":"up"}]}],"26":[{"t":"repeat","n":2,"body":[{"d":"down"}]},{"t":"repeat","n":4,"body":[{"d":"left"}]},{"t":"move","d":"down"},{"t":"repeat","n":3,"body":[{"d":"up"}]},{"t":"repeat","n":3,"body":[{"d":"left"}]}],"27":[{"t":"move","d":"right"},{"t":"move","d":"down"},{"t":"move","d":"right"},{"t":"move","d":"down"},{"t":"move","d":"right"},{"t":"move","d":"down"},{"t":"move","d":"right"},{"t":"move","d":"down"}],"28":[{"t":"repeat","n":4,"body":[{"d":"right"},{"d":"down"}]}],"29":[{"t":"repeat","n":3,"body":[{"d":"right"},{"d":"up"}]}],"30":[{"t":"repeat","n":3,"body":[{"d":"right"},{"d":"down"}]},{"t":"repeat","n":3,"body":[{"d":"right"}]}],"31":[{"t":"repeat","n":3,"body":[{"d":"left"}]},{"t":"repeat","n":3,"body":[{"d":"up"},{"d":"left"}]}],"32":[{"t":"repeat","n":5,"body":[{"d":"right"},{"d":"down"}]}],"33":[{"t":"repeat","n":5,"body":[{"d":"right"},{"d":"down"}]}],"34":[{"t":"repeat","n":4,"body":[{"d":"up"},{"d":"right"}]}],"35":[{"t":"repeat","n":4,"body":[{"d":"up"},{"d":"right"}]}],"36":[{"t":"repeat","n":4,"body":[{"d":"right"},{"d":"up"}]}],"37":[{"t":"repeat","n":5,"body":[{"d":"down"},{"d":"right"}]}],"38":[{"t":"repeat","n":3,"body":[{"d":"up"}]},{"t":"repeat","n":3,"body":[{"d":"right"},{"d":"down"}]}],"39":[{"t":"repeat","n":4,"body":[{"d":"up"},{"d":"left"}]}],"40":[{"t":"repeat","n":2,"body":[{"d":"up"}]},{"t":"repeat","n":4,"body":[{"d":"left"}]},{"t":"repeat","n":2,"body":[{"d":"down"},{"d":"left"}]}],"41":[{"t":"repeat","n":5,"body":[{"d":"up"},{"d":"left"}]},{"t":"move","d":"left"},{"t":"repeat","n":3,"body":[{"d":"down"}]}],"42":[{"t":"move","d":"up"},{"t":"move","d":"right"},{"t":"move","d":"up"},{"t":"move","d":"right"},{"t":"move","d":"up"},{"t":"move","d":"right"},{"t":"move","d":"right"},{"t":"move","d":"down"},{"t":"move","d":"right"},{"t":"move","d":"down"},{"t":"move","d":"right"},{"t":"move","d":"down"}],"43":[{"t":"repeat","n":3,"body":[{"d":"up"},{"d":"right"}]},{"t":"repeat","n":3,"body":[{"d":"right"},{"d":"down"}]}],"44":[{"t":"repeat","n":3,"body":[{"d":"down"},{"d":"right"}]},{"t":"repeat","n":3,"body":[{"d":"right"},{"d":"up"}]}],"45":[{"t":"repeat","n":2,"body":[{"d":"up"},{"d":"right"}]},{"t":"repeat","n":3,"body":[{"d":"down"},{"d":"right"}]}],"46":[{"t":"repeat","n":3,"body":[{"d":"up"},{"d":"left"}]},{"t":"repeat","n":3,"body":[{"d":"down"},{"d":"left"}]}],"47":[{"t":"move","d":"right"},{"t":"move","d":"right"},{"t":"move","d":"down"},{"t":"move","d":"right"},{"t":"move","d":"right"},{"t":"move","d":"down"},{"t":"move","d":"right"},{"t":"move","d":"right"},{"t":"move","d":"down"}],"48":[{"t":"repeat","n":3,"body":[{"d":"right"},{"d":"right"},{"d":"down"}]}],"49":[{"t":"repeat","n":3,"body":[{"d":"down"},{"d":"down"},{"d":"right"}]}],"50":[{"t":"repeat","n":3,"body":[{"d":"up"},{"d":"up"},{"d":"right"}]}],"51":[{"t":"repeat","n":3,"body":[{"d":"up"},{"d":"right"},{"d":"right"}]}],"52":[{"t":"repeat","n":2,"body":[{"d":"up"}]},{"t":"repeat","n":3,"body":[{"d":"right"},{"d":"right"},{"d":"down"}]}],"53":[{"t":"repeat","n":2,"body":[{"d":"up"}]},{"t":"repeat","n":3,"body":[{"d":"right"},{"d":"right"},{"d":"down"}]}],"54":[{"t":"repeat","n":2,"body":[{"d":"up"},{"d":"up"},{"d":"right"}]},{"t":"repeat","n":2,"body":[{"d":"right"},{"d":"right"},{"d":"down"}]}],"55":[{"t":"repeat","n":4,"body":[{"d":"up"}]},{"t":"repeat","n":5,"body":[{"d":"right"},{"d":"down"}]},{"t":"repeat","n":3,"body":[{"d":"left"}]},{"t":"repeat","n":4,"body":[{"d":"right"}]},{"t":"move","d":"up"}],"56":[{"t":"move","d":"down"},{"t":"repeat","n":4,"body":[{"d":"left"}]},{"t":"repeat","n":4,"body":[{"d":"up"},{"d":"right"}]},{"t":"repeat","n":3,"body":[{"d":"left"}]},{"t":"move","d":"up"},{"t":"repeat","n":4,"body":[{"d":"left"}]}],"57":[{"t":"repeat","n":3,"body":[{"d":"left"}]},{"t":"repeat","n":3,"body":[{"d":"up"},{"d":"right"}]},{"t":"repeat","n":4,"body":[{"d":"left"}]},{"t":"move","d":"down"},{"t":"repeat","n":3,"body":[{"d":"left"}]},{"t":"move","d":"up"}],"58":[{"t":"repeat","n":3,"body":[{"d":"up"}]},{"t":"repeat","n":3,"body":[{"d":"right"},{"d":"up"}]},{"t":"move","d":"left"},{"t":"repeat","n":5,"body":[{"d":"right"}]},{"t":"repeat","n":4,"body":[{"d":"down"}]}],"59":[{"t":"repeat","n":5,"body":[{"d":"right"}]},{"t":"move","d":"left"},{"t":"repeat","n":5,"body":[{"d":"down"}]},{"t":"move","d":"up"},{"t":"repeat","n":4,"body":[{"d":"left"}]},{"t":"repeat","n":2,"body":[{"d":"down"}]}],"60":[{"t":"repeat","n":2,"body":[{"d":"up"}]},{"t":"repeat","n":7,"body":[{"d":"right"}]},{"t":"repeat","n":3,"body":[{"d":"up"},{"d":"left"}]},{"t":"repeat","n":5,"body":[{"d":"down"}]},{"t":"repeat","n":3,"body":[{"d":"right"}]}],"61":[{"t":"repeat","n":3,"body":[{"d":"up"}]},{"t":"repeat","n":5,"body":[{"d":"right"},{"d":"down"}]},{"t":"move","d":"left"},{"t":"repeat","n":5,"body":[{"d":"up"}]},{"t":"repeat","n":3,"body":[{"d":"right"},{"d":"down"}]}],"62":[{"t":"repeat","n":3,"body":[{"d":"up"},{"d":"left"},{"d":"left"}]},{"t":"repeat","n":6,"body":[{"d":"right"}]},{"t":"repeat","n":7,"body":[{"d":"left"}]},{"t":"repeat","n":2,"body":[{"d":"down"}]}],"63":[{"t":"repeat","n":2,"body":[{"d":"up"}]},{"t":"repeat","n":2,"body":[{"d":"left"}]},{"t":"repeat","n":5,"body":[{"d":"down"}]},{"t":"move","d":"right"},{"t":"repeat","n":6,"body":[{"d":"left"}]},{"t":"repeat","n":3,"body":[{"d":"up"}]}],"64":[{"t":"repeat","n":2,"body":[{"d":"down"}]},{"t":"repeat","n":5,"body":[{"d":"left"}]},{"t":"repeat","n":2,"body":[{"d":"up"},{"d":"left"}]}],"65":[{"t":"repeat","n":2,"body":[{"d":"up"},{"d":"right"}]},{"t":"repeat","n":2,"body":[{"d":"right"},{"d":"right"},{"d":"down"}]}],"66":[{"t":"repeat","n":3,"body":[{"d":"down"}]},{"t":"repeat","n":7,"body":[{"d":"left"}]},{"t":"repeat","n":5,"body":[{"d":"up"},{"d":"right"}]},{"t":"repeat","n":2,"body":[{"d":"down"},{"d":"left"}]},{"t":"repeat","n":3,"body":[{"d":"left"}]}],"67":[{"t":"repeat","n":5,"body":[{"d":"left"}]},{"t":"repeat","n":2,"body":[{"d":"right"},{"d":"up"},{"d":"up"}]},{"t":"repeat","n":4,"body":[{"d":"left"},{"d":"down"}]}],"68":[{"t":"repeat","n":5,"body":[{"d":"right"}]},{"t":"repeat","n":3,"body":[{"d":"down"}]},{"t":"repeat","n":6,"body":[{"d":"left"}]},{"t":"move","d":"right"},{"t":"repeat","n":3,"body":[{"d":"down"}]},{"t":"move","d":"left"}],"69":[{"t":"repeat","n":5,"body":[{"d":"down"}]},{"t":"repeat","n":7,"body":[{"d":"left"}]},{"t":"repeat","n":3,"body":[{"d":"up"},{"d":"right"}]},{"t":"repeat","n":3,"body":[{"d":"up"},{"d":"left"}]},{"t":"move","d":"down"}],"70":[{"t":"repeat","n":2,"body":[{"d":"up"},{"d":"left"}]},{"t":"repeat","n":3,"body":[{"d":"down"},{"d":"left"},{"d":"down"}]},{"t":"repeat","n":2,"body":[{"d":"up"},{"d":"left"},{"d":"up"}]}],"71":[{"t":"repeat","n":2,"body":[{"d":"up"},{"d":"right"},{"d":"up"}]},{"t":"repeat","n":5,"body":[{"d":"right"}]},{"t":"repeat","n":3,"body":[{"d":"left"}]},{"t":"repeat","n":3,"body":[{"d":"down"},{"d":"right"},{"d":"down"}]},{"t":"repeat","n":3,"body":[{"d":"up"}]}],"72":[{"t":"repeat","n":3,"body":[{"d":"down"},{"d":"left"},{"d":"left"}]},{"t":"repeat","n":2,"body":[{"d":"up"},{"d":"right"},{"d":"right"}]},{"t":"repeat","n":5,"body":[{"d":"down"},{"d":"left"}]},{"t":"repeat","n":6,"body":[{"d":"up"}]}]}
+</script>
+
 <!-- LEVEL DATA: paste a new levels.json here to change or add levels. -->
 <script type="application/json" id="level-data">
 {
@@ -383,7 +443,7 @@ button:focus-visible { outline: 4px solid var(--star); outline-offset: 3px; }
       "blocks": ["up", "down"],
       "slotLimit": null,
       "par": 3,
-      "hint": "The goal is below the robot."
+      "hint": "The battery is straight below the robot."
     },
     {
       "id": 3,
@@ -416,7 +476,7 @@ button:focus-visible { outline: 4px solid var(--star); outline-offset: 3px; }
       "blocks": ["up", "down", "left", "right"],
       "slotLimit": null,
       "par": 5,
-      "hint": "Pick up both stars, then reach the goal."
+      "hint": "Plan a path that passes both stars on the way to the battery."
     },
     {
       "id": 6,
@@ -471,7 +531,7 @@ button:focus-visible { outline: 4px solid var(--star); outline-offset: 3px; }
       "blocks": ["up", "down", "left", "right"],
       "slotLimit": 12,
       "par": 9,
-      "hint": "Avoid the holes and monsters. Collect every star."
+      "hint": "Go up and over the top, then come down to the battery."
     },
     {
       "id": 11,
@@ -482,7 +542,7 @@ button:focus-visible { outline: 4px solid var(--star); outline-offset: 3px; }
       "blocks": ["up", "down", "left", "right"],
       "slotLimit": 11,
       "par": 9,
-      "hint": "Avoid the holes and monsters."
+      "hint": "The bottom row is guarded. Climb up, walk across, then drop down to the battery."
     },
     {
       "id": 12,
@@ -493,7 +553,7 @@ button:focus-visible { outline: 4px solid var(--star); outline-offset: 3px; }
       "blocks": ["up", "down", "left", "right"],
       "slotLimit": 11,
       "par": 10,
-      "hint": "Avoid the holes and monsters. Collect every star."
+      "hint": "Climb up first. The way through the maze starts near the top."
     },
     {
       "id": 13,
@@ -504,7 +564,7 @@ button:focus-visible { outline: 4px solid var(--star); outline-offset: 3px; }
       "blocks": ["up", "down", "left", "right"],
       "slotLimit": 13,
       "par": 11,
-      "hint": "Avoid the holes and monsters. Collect every star."
+      "hint": "Dip below the holes, then climb back up bit by bit to the battery."
     },
     {
       "id": 14,
@@ -515,7 +575,7 @@ button:focus-visible { outline: 4px solid var(--star); outline-offset: 3px; }
       "blocks": ["up", "down", "left", "right"],
       "slotLimit": 14,
       "par": 12,
-      "hint": "Avoid the holes and monsters. Collect every star."
+      "hint": "Get the top star first, then work your way down past the other one."
     },
     {
       "id": 15,
@@ -526,7 +586,7 @@ button:focus-visible { outline: 4px solid var(--star); outline-offset: 3px; }
       "blocks": ["up", "down", "left", "right"],
       "slotLimit": 13,
       "par": 11,
-      "hint": "Avoid the holes and monsters. Collect every star."
+      "hint": "Wiggle down through the middle, then run along the bottom to the battery."
     },
     {
       "id": 16,
@@ -543,7 +603,7 @@ button:focus-visible { outline: 4px solid var(--star); outline-offset: 3px; }
       "id": 17,
       "title": "Do It Again",
       "concept": "First loop: Repeat holds one arrow and runs it several times.",
-      "map": [".......", "R.....G", "......."],
+      "map": ["R.....G", "......."],
       "goal": "reach_goal",
       "blocks": ["right", "repeat"],
       "slotLimit": 3,
@@ -558,7 +618,7 @@ button:focus-visible { outline: 4px solid var(--star); outline-offset: 3px; }
       "id": 18,
       "title": "Straight Down",
       "concept": "Repeat a vertical arrow.",
-      "map": [".R.", "...", "...", "...", "...", "...", ".G."],
+      "map": ["R.", "..", "..", "..", "..", "..", "G."],
       "goal": "reach_goal",
       "blocks": ["down", "repeat"],
       "slotLimit": 3,
@@ -603,12 +663,12 @@ button:focus-visible { outline: 4px solid var(--star); outline-offset: 3px; }
       "id": 21,
       "title": "Around the Hole",
       "concept": "Repeat plus a detour.",
-      "map": [".......", "R...O.G", "......."],
+      "map": ["R...O.G", "......."],
       "goal": "reach_goal",
       "blocks": ["up", "down", "right", "repeat"],
       "slotLimit": 5,
       "par": 3,
-      "hint": "The hole is in the way. Go over the top.",
+      "hint": "Step off the row to pass the hole, then come back at the end.",
       "repeat": {
         "counts": [2, 3, 4, 5, 6],
         "innerSlots": 1
@@ -618,12 +678,12 @@ button:focus-visible { outline: 4px solid var(--star); outline-offset: 3px; }
       "id": 22,
       "title": "Over and Over",
       "concept": "",
-      "map": ["........", "RM.....G", "........"],
+      "map": ["RM.....G", "........"],
       "goal": "reach_goal",
       "blocks": ["up", "down", "left", "right", "repeat"],
       "slotLimit": 3,
       "par": 3,
-      "hint": "Only 3 slots. Use Repeat. Avoid the holes and monsters.",
+      "hint": "Same trick as before, but no spare slots: step aside, one long Repeat, step back.",
       "repeat": {
         "counts": [2, 3, 4, 5, 6, 7],
         "innerSlots": 1
@@ -633,12 +693,12 @@ button:focus-visible { outline: 4px solid var(--star); outline-offset: 3px; }
       "id": 23,
       "title": "Loop the Loop",
       "concept": "",
-      "map": [".......", "....M.R", "G....O.", ".......", "*......"],
+      "map": ["....M.R", "G....O.", ".......", "*......"],
       "goal": "collect_all_then_reach",
       "blocks": ["up", "down", "left", "right", "repeat"],
       "slotLimit": 3,
       "par": 3,
-      "hint": "Only 3 slots. Use Repeat. Avoid the holes and monsters. Collect every star.",
+      "hint": "Three straight lines: down, across, then up to the battery.",
       "repeat": {
         "counts": [2, 3, 4, 5, 6],
         "innerSlots": 1
@@ -648,12 +708,12 @@ button:focus-visible { outline: 4px solid var(--star); outline-offset: 3px; }
       "id": 24,
       "title": "Keep Repeating",
       "concept": "",
-      "map": ["........", "RO......", ".O....*G", "........", "........"],
+      "map": ["RO......", ".O....*G", "........"],
       "goal": "collect_all_then_reach",
       "blocks": ["up", "down", "left", "right", "repeat"],
       "slotLimit": 4,
       "par": 4,
-      "hint": "Only 4 slots. Use Repeat. Avoid the holes and monsters. Collect every star.",
+      "hint": "Drop down, make one long run across, then a small hop to finish.",
       "repeat": {
         "counts": [2, 3, 4, 5, 6, 7],
         "innerSlots": 1
@@ -668,7 +728,7 @@ button:focus-visible { outline: 4px solid var(--star); outline-offset: 3px; }
       "blocks": ["up", "down", "left", "right", "repeat"],
       "slotLimit": 4,
       "par": 4,
-      "hint": "Only 4 slots. Use Repeat. Avoid the holes and monsters. Collect every star.",
+      "hint": "Four straight lines, like a big U around the walls.",
       "repeat": {
         "counts": [2, 3, 4, 5, 6, 7],
         "innerSlots": 1
@@ -678,12 +738,12 @@ button:focus-visible { outline: 4px solid var(--star); outline-offset: 3px; }
       "id": 26,
       "title": "Star Trail",
       "concept": "",
-      "map": ["G.....OR", ".OM.....", "....*...", "...*....", "........", "........"],
+      "map": ["G.....OR", ".OM.....", "....*...", "...*...."],
       "goal": "collect_all_then_reach",
       "blocks": ["up", "down", "left", "right", "repeat"],
       "slotLimit": 5,
       "par": 5,
-      "hint": "Only 5 slots. Use Repeat. Avoid the holes and monsters. Collect every star.",
+      "hint": "Mostly long straight Repeats, with one small step in the middle.",
       "repeat": {
         "counts": [2, 3, 4, 5, 6, 7],
         "innerSlots": 1
@@ -698,7 +758,7 @@ button:focus-visible { outline: 4px solid var(--star); outline-offset: 3px; }
       "blocks": ["up", "down", "left", "right"],
       "slotLimit": 11,
       "par": 8,
-      "hint": "Walk down the stairs: right, down, right, down... Pick up every star."
+      "hint": "Walk down the stairs: right, down, right, down..."
     },
     {
       "id": 28,
@@ -719,12 +779,12 @@ button:focus-visible { outline: 4px solid var(--star); outline-offset: 3px; }
       "id": 29,
       "title": "Star Stairs",
       "concept": "Stairs with a star on the way.",
-      "map": ["...G.", "..*..", ".....", "R...."],
+      "map": ["...G", "..*.", "....", "R..."],
       "goal": "collect_all_then_reach",
       "blocks": ["right", "up", "repeat"],
       "slotLimit": 1,
       "par": 1,
-      "hint": "Only 1 slot. Climb the stairs and pick up the star.",
+      "hint": "Climb the stairs. The star sits on one of the steps.",
       "repeat": {
         "counts": [2, 3, 4, 5],
         "innerSlots": 2
@@ -739,7 +799,7 @@ button:focus-visible { outline: 4px solid var(--star); outline-offset: 3px; }
       "blocks": ["up", "down", "left", "right", "repeat"],
       "slotLimit": 2,
       "par": 2,
-      "hint": "Down the stairs, then along the floor. 2 slots.",
+      "hint": "Down the stairs, then along the floor.",
       "repeat": {
         "counts": [2, 3, 4, 5],
         "innerSlots": 2
@@ -754,7 +814,7 @@ button:focus-visible { outline: 4px solid var(--star); outline-offset: 3px; }
       "blocks": ["up", "down", "left", "right", "repeat"],
       "slotLimit": 2,
       "par": 2,
-      "hint": "Along the floor, then up the stairs. 2 slots.",
+      "hint": "Along the floor, then up the stairs.",
       "repeat": {
         "counts": [2, 3, 4, 5],
         "innerSlots": 2
@@ -762,55 +822,59 @@ button:focus-visible { outline: 4px solid var(--star); outline-offset: 3px; }
     },
     {
       "id": 32,
-      "title": "Repeat Pro",
+      "title": "Stairs, No Stars",
       "concept": "",
-      "map": [".......", ".......", ".......", ".......", "O.*..M.", "G..O..R"],
-      "goal": "collect_all_then_reach",
-      "blocks": ["up", "down", "left", "right", "repeat"],
-      "slotLimit": 3,
-      "par": 3,
-      "hint": "Only 3 slots. A Repeat can hold 2 arrows. Avoid the holes and monsters. Collect every star.",
+      "map": ["R.....", "#.....", "##....", "###...", "####..", "#####G"],
+      "goal": "reach_goal",
+      "blocks": ["right", "down", "repeat"],
+      "slotLimit": 1,
+      "par": 1,
+      "hint": "Stairs again, but no stars this time.",
       "repeat": {
-        "counts": [2, 3, 4, 5, 6],
+        "counts": [2, 3, 4, 5],
         "innerSlots": 2
       }
     },
     {
       "id": 33,
-      "title": "Monster Dodge",
+      "title": "Some Steps Missing",
       "concept": "",
-      "map": ["..*....", ".....#.", ".#.....", "GM....#", "#......", ".O....R", "..#..MO"],
-      "goal": "collect_all_then_reach",
-      "blocks": ["up", "down", "left", "right", "repeat"],
-      "slotLimit": 3,
-      "par": 3,
-      "hint": "Only 3 slots. A Repeat can hold 2 arrows. Avoid the holes and monsters. Collect every star.",
+      "map": ["R.....", "#.....", "......", "..#...", "......", "....#G"],
+      "goal": "reach_goal",
+      "blocks": ["right", "down", "repeat"],
+      "slotLimit": 1,
+      "par": 1,
+      "hint": "Some walls are gone, but it is the same staircase.",
       "repeat": {
-        "counts": [2, 3, 4, 5, 6],
+        "counts": [2, 3, 4, 5],
         "innerSlots": 2
       }
     },
     {
       "id": 34,
-      "title": "Mountain Walk",
-      "concept": "Up the mountain and down again, by hand.",
-      "map": ["...*...", "..*.*..", ".*.##*.", "R.####G"],
-      "goal": "collect_all_then_reach",
-      "blocks": ["up", "down", "left", "right"],
-      "slotLimit": 15,
-      "par": 12,
-      "hint": "Climb the mountain step by step and pick up every star."
+      "title": "Monster Guards",
+      "concept": "",
+      "map": ["M...G", ".....", "....#", "...#.", "R...M"],
+      "goal": "reach_goal",
+      "blocks": ["up", "down", "left", "right", "repeat"],
+      "slotLimit": 2,
+      "par": 1,
+      "hint": "Monsters block the straight paths. Take the stairs!",
+      "repeat": {
+        "counts": [2, 3, 4, 5],
+        "innerSlots": 2
+      }
     },
     {
       "id": 35,
-      "title": "Mountain",
+      "title": "Up First",
       "concept": "",
-      "map": ["...*...", "..*.*..", ".*.##*.", "R.####G"],
-      "goal": "collect_all_then_reach",
+      "map": ["M...G", ".....", "...#.", "..#..", "RO..."],
+      "goal": "reach_goal",
       "blocks": ["up", "down", "left", "right", "repeat"],
-      "slotLimit": 2,
-      "par": 2,
-      "hint": "Same mountain, only 2 slots: one Repeat to climb up, one to climb down.",
+      "slotLimit": 1,
+      "par": 1,
+      "hint": "There is a hole on the right! Start the stairs going up.",
       "repeat": {
         "counts": [2, 3, 4, 5],
         "innerSlots": 2
@@ -818,14 +882,14 @@ button:focus-visible { outline: 4px solid var(--star); outline-offset: 3px; }
     },
     {
       "id": 36,
-      "title": "Valley",
+      "title": "Right First",
       "concept": "",
-      "map": ["R.OOOOG", "...OO..", ".......", "...*..."],
-      "goal": "collect_all_then_reach",
+      "map": ["....G", ".....", "....#", "O..#.", "R...M"],
+      "goal": "reach_goal",
       "blocks": ["up", "down", "left", "right", "repeat"],
-      "slotLimit": 2,
-      "par": 2,
-      "hint": "The holes make a valley. Stairs down, then stairs up. 2 slots.",
+      "slotLimit": 1,
+      "par": 1,
+      "hint": "There is a hole above! Start the stairs going right.",
       "repeat": {
         "counts": [2, 3, 4, 5],
         "innerSlots": 2
@@ -833,14 +897,14 @@ button:focus-visible { outline: 4px solid var(--star); outline-offset: 3px; }
     },
     {
       "id": 37,
-      "title": "Again and Again",
+      "title": "Which Way First?",
       "concept": "",
-      "map": ["......", "......", "......", "R.M...", "..O..G", "......"],
+      "map": ["RM....", "......", "...#..", "....#.", "......", "O....G"],
       "goal": "reach_goal",
       "blocks": ["up", "down", "left", "right", "repeat"],
-      "slotLimit": 2,
-      "par": 2,
-      "hint": "Only 2 slots. Climb over the monster with stairs, then take stairs down.",
+      "slotLimit": 1,
+      "par": 1,
+      "hint": "Look at the monster. Which arrow should go first?",
       "repeat": {
         "counts": [2, 3, 4, 5],
         "innerSlots": 2
@@ -848,21 +912,137 @@ button:focus-visible { outline: 4px solid var(--star); outline-offset: 3px; }
     },
     {
       "id": 38,
-      "title": "Round and Round",
+      "title": "Climb, Then Stairs",
       "concept": "",
-      "map": [".......", ".......", ".....*.", "G..O.OR", ".......", "......."],
-      "goal": "collect_all_then_reach",
+      "map": ["....", "....", ".#..", "RO.G"],
+      "goal": "reach_goal",
       "blocks": ["up", "down", "left", "right", "repeat"],
       "slotLimit": 2,
       "par": 2,
-      "hint": "Only 2 slots. A Repeat can hold 2 arrows. Avoid the holes and monsters. Collect every star.",
+      "hint": "Go up first, then take the stairs down.",
+      "repeat": {
+        "counts": [2, 3, 4, 5],
+        "innerSlots": 2
+      }
+    },
+    {
+      "id": 39,
+      "title": "No Walls",
+      "concept": "",
+      "map": ["G...M", ".....", ".....", ".....", "M...R"],
+      "goal": "reach_goal",
+      "blocks": ["up", "down", "left", "right", "repeat"],
+      "slotLimit": 2,
+      "par": 1,
+      "hint": "No walls to help now. Monsters guard the corners. Find the stairs!",
+      "repeat": {
+        "counts": [2, 3, 4, 5],
+        "innerSlots": 2
+      }
+    },
+    {
+      "id": 40,
+      "title": "Repeat Pro",
+      "concept": "",
+      "map": [".......", "O.*..M.", "G..O..R"],
+      "goal": "collect_all_then_reach",
+      "blocks": ["up", "down", "left", "right", "repeat"],
+      "slotLimit": 3,
+      "par": 3,
+      "hint": "Climb a little, run along the top, then a short staircase down to the battery.",
       "repeat": {
         "counts": [2, 3, 4, 5, 6],
         "innerSlots": 2
       }
     },
     {
-      "id": 39,
+      "id": 41,
+      "title": "Monster Dodge",
+      "concept": "",
+      "map": ["..*....", ".....#.", ".#.....", "GM....#", "#......", ".O....R", "..#..MO"],
+      "goal": "collect_all_then_reach",
+      "blocks": ["up", "down", "left", "right", "repeat"],
+      "slotLimit": 3,
+      "par": 3,
+      "hint": "Start with a long staircase climbing to the left, then find your way down.",
+      "repeat": {
+        "counts": [2, 3, 4, 5, 6],
+        "innerSlots": 2
+      }
+    },
+    {
+      "id": 42,
+      "title": "Mountain Walk",
+      "concept": "Up the mountain and down again, by hand.",
+      "map": ["...*...", "..*.*..", ".*.##*.", "R.####G"],
+      "goal": "collect_all_then_reach",
+      "blocks": ["up", "down", "left", "right"],
+      "slotLimit": 15,
+      "par": 12,
+      "hint": "Climb the mountain step by step."
+    },
+    {
+      "id": 43,
+      "title": "Mountain",
+      "concept": "",
+      "map": ["...*...", "..*.*..", ".*.##*.", "R.####G"],
+      "goal": "collect_all_then_reach",
+      "blocks": ["up", "down", "left", "right", "repeat"],
+      "slotLimit": 2,
+      "par": 2,
+      "hint": "Same mountain: one Repeat to climb up, one to climb down.",
+      "repeat": {
+        "counts": [2, 3, 4, 5],
+        "innerSlots": 2
+      }
+    },
+    {
+      "id": 44,
+      "title": "Valley",
+      "concept": "",
+      "map": ["R.OOOOG", "...OO..", ".......", "...*..."],
+      "goal": "collect_all_then_reach",
+      "blocks": ["up", "down", "left", "right", "repeat"],
+      "slotLimit": 2,
+      "par": 2,
+      "hint": "The holes make a valley. Stairs down, then stairs up.",
+      "repeat": {
+        "counts": [2, 3, 4, 5],
+        "innerSlots": 2
+      }
+    },
+    {
+      "id": 45,
+      "title": "Again and Again",
+      "concept": "",
+      "map": ["......", "......", "R.M...", "..O..G"],
+      "goal": "reach_goal",
+      "blocks": ["up", "down", "left", "right", "repeat"],
+      "slotLimit": 2,
+      "par": 2,
+      "hint": "Climb over the monster with stairs, then take stairs down.",
+      "repeat": {
+        "counts": [2, 3, 4, 5],
+        "innerSlots": 2
+      }
+    },
+    {
+      "id": 46,
+      "title": "Round and Round",
+      "concept": "",
+      "map": [".......", ".......", ".....*.", "G..O.OR"],
+      "goal": "collect_all_then_reach",
+      "blocks": ["up", "down", "left", "right", "repeat"],
+      "slotLimit": 2,
+      "par": 2,
+      "hint": "Like a mountain going left: stairs up, then stairs down.",
+      "repeat": {
+        "counts": [2, 3, 4, 5, 6],
+        "innerSlots": 2
+      }
+    },
+    {
+      "id": 47,
       "title": "Long Steps by Hand",
       "concept": "",
       "map": ["R......", "##*....", "####*..", "######G"],
@@ -873,7 +1053,7 @@ button:focus-visible { outline: 4px solid var(--star); outline-offset: 3px; }
       "hint": "Each step is two squares wide: right, right, down."
     },
     {
-      "id": 40,
+      "id": 48,
       "title": "Long Steps",
       "concept": "",
       "map": ["R......", "##*....", "####*..", "######G"],
@@ -881,14 +1061,14 @@ button:focus-visible { outline: 4px solid var(--star); outline-offset: 3px; }
       "blocks": ["right", "down", "repeat"],
       "slotLimit": 1,
       "par": 1,
-      "hint": "Same steps, 1 slot. This Repeat holds 3 arrows: right, right, down.",
+      "hint": "Same steps. This Repeat holds 3 arrows.",
       "repeat": {
         "counts": [2, 3, 4, 5],
         "innerSlots": 3
       }
     },
     {
-      "id": 41,
+      "id": 49,
       "title": "Steep Steps",
       "concept": "",
       "map": ["R...", "....", ".*..", "#...", "#.*.", "##..", "##.G"],
@@ -896,187 +1076,67 @@ button:focus-visible { outline: 4px solid var(--star); outline-offset: 3px; }
       "blocks": ["up", "down", "left", "right", "repeat"],
       "slotLimit": 1,
       "par": 1,
-      "hint": "Each step is two squares tall: down, down, right. 1 slot.",
+      "hint": "Each step is two squares tall.",
       "repeat": {
         "counts": [2, 3, 4, 5],
         "innerSlots": 3
       }
     },
     {
-      "id": 42,
-      "title": "Plan Ahead",
-      "concept": "",
-      "map": [".......", ".......", ".......", ".......", "R..O...", "....M.G"],
-      "goal": "reach_goal",
-      "blocks": ["up", "down", "left", "right", "repeat"],
-      "slotLimit": 2,
-      "par": 2,
-      "hint": "Only 2 slots. A Repeat can hold 3 arrows. Avoid the holes and monsters.",
-      "repeat": {
-        "counts": [2, 3, 4, 5, 6],
-        "innerSlots": 3
-      }
-    },
-    {
-      "id": 43,
-      "title": "Loop It",
-      "concept": "",
-      "map": [".......", ".......", ".......", "..M*...", "R..O..G", ".O*...."],
-      "goal": "collect_all_then_reach",
-      "blocks": ["up", "down", "left", "right", "repeat"],
-      "slotLimit": 5,
-      "par": 5,
-      "hint": "Only 5 slots. A Repeat can hold 2 arrows. Avoid the holes and monsters. Collect every star.",
-      "repeat": {
-        "counts": [2, 3, 4, 5, 6],
-        "innerSlots": 2
-      }
-    },
-    {
-      "id": 44,
-      "title": "Shiny Stars",
-      "concept": "",
-      "map": ["........", "G.*...M.", "...O...*", "........", ".......O", "......OR", "........"],
-      "goal": "collect_all_then_reach",
-      "blocks": ["up", "down", "left", "right", "repeat"],
-      "slotLimit": 6,
-      "par": 6,
-      "hint": "Only 6 slots. A Repeat can hold 2 arrows. Avoid the holes and monsters. Collect every star.",
-      "repeat": {
-        "counts": [2, 3, 4, 5, 6, 7],
-        "innerSlots": 2
-      }
-    },
-    {
-      "id": 45,
-      "title": "Monster Maze",
-      "concept": "",
-      "map": ["G#O.....", "..*.M...", "###O*...", "...O...R", "......M.", "......#.", "...#...."],
-      "goal": "collect_all_then_reach",
-      "blocks": ["up", "down", "left", "right", "repeat"],
-      "slotLimit": 6,
-      "par": 6,
-      "hint": "Only 6 slots. A Repeat can hold 2 arrows. Avoid the holes and monsters. Collect every star.",
-      "repeat": {
-        "counts": [2, 3, 4, 5, 6, 7],
-        "innerSlots": 2
-      }
-    },
-    {
-      "id": 46,
-      "title": "Tricky Corner",
-      "concept": "",
-      "map": ["..*.....", "##.*.#..", ".....#..", "*.......", "..#OO..G", "..M.#...", "RM.OM..#"],
-      "goal": "collect_all_then_reach",
-      "blocks": ["up", "down", "left", "right", "repeat"],
-      "slotLimit": 5,
-      "par": 5,
-      "hint": "Only 5 slots. A Repeat can hold 2 arrows. Avoid the holes and monsters. Collect every star.",
-      "repeat": {
-        "counts": [2, 3, 4, 5, 6, 7],
-        "innerSlots": 2
-      }
-    },
-    {
-      "id": 47,
-      "title": "Star Run",
-      "concept": "",
-      "map": [".R*...*", "..##...", ".M.....", "O......", "......#", "O.O..*.", ".G..#.."],
-      "goal": "collect_all_then_reach",
-      "blocks": ["up", "down", "left", "right", "repeat"],
-      "slotLimit": 6,
-      "par": 6,
-      "hint": "Only 6 slots. Use Repeat. Avoid the holes and monsters. Collect every star.",
-      "repeat": {
-        "counts": [2, 3, 4, 5, 6],
-        "innerSlots": 1
-      }
-    },
-    {
-      "id": 48,
-      "title": "Smart Moves",
-      "concept": "",
-      "map": ["........", "........", ".......*", "......*.", ".....M.O", "RO.O*..G", "..OM...."],
-      "goal": "collect_all_then_reach",
-      "blocks": ["up", "down", "left", "right", "repeat"],
-      "slotLimit": 5,
-      "par": 5,
-      "hint": "Only 5 slots. A Repeat can hold 2 arrows. Avoid the holes and monsters. Collect every star.",
-      "repeat": {
-        "counts": [2, 3, 4, 5, 6, 7],
-        "innerSlots": 2
-      }
-    },
-    {
-      "id": 49,
-      "title": "Monster Town",
-      "concept": "",
-      "map": ["........", ".*......", "........", "........", "R.O..MOG", "O....*.M", "........"],
-      "goal": "collect_all_then_reach",
-      "blocks": ["up", "down", "left", "right", "repeat"],
-      "slotLimit": 5,
-      "par": 5,
-      "hint": "Only 5 slots. A Repeat can hold 2 arrows. Avoid the holes and monsters. Collect every star.",
-      "repeat": {
-        "counts": [2, 3, 4, 5, 6, 7],
-        "innerSlots": 2
-      }
-    },
-    {
       "id": 50,
-      "title": "Think First",
+      "title": "Tall Steps Up",
       "concept": "",
-      "map": ["........", "........", "......**", "...*...M", "G.O.O...", "O..O...R", ".....M.."],
+      "map": ["...G", "...#", "..*.", "..#.", ".*..", ".#..", "R..."],
       "goal": "collect_all_then_reach",
       "blocks": ["up", "down", "left", "right", "repeat"],
-      "slotLimit": 4,
-      "par": 4,
-      "hint": "Only 4 slots. A Repeat can hold 3 arrows. Avoid the holes and monsters. Collect every star.",
+      "slotLimit": 1,
+      "par": 1,
+      "hint": "Tall steps going up. Which arrows make one step?",
       "repeat": {
-        "counts": [2, 3, 4, 5, 6, 7],
+        "counts": [2, 3, 4, 5],
         "innerSlots": 3
       }
     },
     {
       "id": 51,
-      "title": "Star Path",
+      "title": "Wide Steps Up",
       "concept": "",
-      "map": ["........", ".......*", "........", "G.O....R", ".OM...OM", "........", "......*."],
-      "goal": "collect_all_then_reach",
+      "map": ["......G", ".....#.", "...#...", "R#....."],
+      "goal": "reach_goal",
       "blocks": ["up", "down", "left", "right", "repeat"],
-      "slotLimit": 6,
-      "par": 6,
-      "hint": "Only 6 slots. Use Repeat. Avoid the holes and monsters. Collect every star.",
+      "slotLimit": 1,
+      "par": 1,
+      "hint": "Wide steps going up. Count the squares in one step.",
       "repeat": {
-        "counts": [2, 3, 4, 5, 6, 7],
-        "innerSlots": 1
+        "counts": [2, 3, 4, 5],
+        "innerSlots": 3
       }
     },
     {
       "id": 52,
-      "title": "Star Catcher",
+      "title": "Climb, Then Wide Steps",
       "concept": "",
-      "map": ["G.....OR", "O.*..M..", ".....*..", "........", "........", "........"],
-      "goal": "collect_all_then_reach",
+      "map": [".......", ".#.....", "R..O...", "....M#G"],
+      "goal": "reach_goal",
       "blocks": ["up", "down", "left", "right", "repeat"],
-      "slotLimit": 3,
-      "par": 3,
-      "hint": "Only 3 slots. A Repeat can hold 2 arrows. Avoid the holes and monsters. Collect every star.",
+      "slotLimit": 2,
+      "par": 2,
+      "hint": "Climb a little first, then take wide stairs down past the hole.",
       "repeat": {
-        "counts": [2, 3, 4, 5, 6, 7],
-        "innerSlots": 2
+        "counts": [2, 3, 4, 5],
+        "innerSlots": 3
       }
     },
     {
       "id": 53,
-      "title": "Mind the Gaps",
+      "title": "Plan Ahead",
       "concept": "",
-      "map": ["..*....", "...M...", "RO...OG", ".......", ".......", "......."],
-      "goal": "collect_all_then_reach",
+      "map": [".......", ".......", "R..O...", "....M.G"],
+      "goal": "reach_goal",
       "blocks": ["up", "down", "left", "right", "repeat"],
       "slotLimit": 2,
       "par": 2,
-      "hint": "Only 2 slots. A Repeat can hold 3 arrows. Avoid the holes and monsters. Collect every star.",
+      "hint": "Like the last level, but no walls to help. Climb, then wide stairs down.",
       "repeat": {
         "counts": [2, 3, 4, 5, 6],
         "innerSlots": 3
@@ -1084,59 +1144,59 @@ button:focus-visible { outline: 4px solid var(--star); outline-offset: 3px; }
     },
     {
       "id": 54,
-      "title": "Clever Robot",
+      "title": "Big Mountain",
       "concept": "",
-      "map": ["........", "O....*O.", "G....M.R", "..*O..M.", "........", "...*....", "........"],
+      "map": ["....*..", "..#....", ".*.##.G", ".#...#.", "R..O..."],
+      "goal": "collect_all_then_reach",
+      "blocks": ["up", "down", "left", "right", "repeat"],
+      "slotLimit": 2,
+      "par": 2,
+      "hint": "Tall steps up, wide steps down. The walls show where each step is.",
+      "repeat": {
+        "counts": [2, 3, 4, 5],
+        "innerSlots": 3
+      }
+    },
+    {
+      "id": 55,
+      "title": "Loop It",
+      "concept": "",
+      "map": [".......", ".......", ".......", "..M*...", "R..O..G", ".O*...."],
       "goal": "collect_all_then_reach",
       "blocks": ["up", "down", "left", "right", "repeat"],
       "slotLimit": 5,
       "par": 5,
-      "hint": "Only 5 slots. A Repeat can hold 2 arrows. Avoid the holes and monsters. Collect every star.",
+      "hint": "Go straight up first, then look for a staircase going down.",
+      "repeat": {
+        "counts": [2, 3, 4, 5, 6],
+        "innerSlots": 2
+      }
+    },
+    {
+      "id": 56,
+      "title": "Shiny Stars",
+      "concept": "",
+      "map": ["G.*...M.", "...O...*", "........", ".......O", "......OR", "........"],
+      "goal": "collect_all_then_reach",
+      "blocks": ["up", "down", "left", "right", "repeat"],
+      "slotLimit": 6,
+      "par": 6,
+      "hint": "Mostly long runs to the left, with one staircase up in the middle.",
       "repeat": {
         "counts": [2, 3, 4, 5, 6, 7],
         "innerSlots": 2
       }
     },
     {
-      "id": 55,
-      "title": "Watch Your Step",
+      "id": 57,
+      "title": "Monster Maze",
       "concept": "",
-      "map": ["........", "........", "........", "..O.M...", "GO*....R", "........"],
-      "goal": "collect_all_then_reach",
-      "blocks": ["up", "down", "left", "right", "repeat"],
-      "slotLimit": 3,
-      "par": 3,
-      "hint": "Only 3 slots. A Repeat can hold 3 arrows. Avoid the holes and monsters. Collect every star.",
-      "repeat": {
-        "counts": [2, 3, 4, 5, 6, 7],
-        "innerSlots": 3
-      }
-    },
-    {
-      "id": 56,
-      "title": "Tiny Tray",
-      "concept": "",
-      "map": [".R......", ".M....*.", ".M......", "*.....*.", "O.O.....", "..O.....", "G......."],
+      "map": ["G#O.....", "..*.M...", "###O*...", "...O...R", "......M.", "......#.", "...#...."],
       "goal": "collect_all_then_reach",
       "blocks": ["up", "down", "left", "right", "repeat"],
       "slotLimit": 6,
       "par": 6,
-      "hint": "Only 6 slots. Use Repeat. Avoid the holes and monsters. Collect every star.",
-      "repeat": {
-        "counts": [2, 3, 4, 5, 6, 7],
-        "innerSlots": 1
-      }
-    },
-    {
-      "id": 57,
-      "title": "Narrow Gap",
-      "concept": "",
-      "map": ["*.M.#MOO", "G..M...R", "##..OO..", "#.......", "........", "..#.#.#.", "*......*"],
-      "goal": "collect_all_then_reach",
-      "blocks": ["up", "down", "left", "right", "repeat"],
-      "slotLimit": 5,
-      "par": 5,
-      "hint": "Only 5 slots. A Repeat can hold 2 arrows. Avoid the holes and monsters. Collect every star.",
+      "hint": "Lots of running left. One staircase up gets you past the walls.",
       "repeat": {
         "counts": [2, 3, 4, 5, 6, 7],
         "innerSlots": 2
@@ -1144,6 +1204,186 @@ button:focus-visible { outline: 4px solid var(--star); outline-offset: 3px; }
     },
     {
       "id": 58,
+      "title": "Tricky Corner",
+      "concept": "",
+      "map": ["..*.....", "##.*.#..", ".....#..", "*.......", "..#OO..G", "..M.#...", "RM.OM..#"],
+      "goal": "collect_all_then_reach",
+      "blocks": ["up", "down", "left", "right", "repeat"],
+      "slotLimit": 5,
+      "par": 5,
+      "hint": "Climb up, then stairs up to the right. Finish with a long run and a drop.",
+      "repeat": {
+        "counts": [2, 3, 4, 5, 6, 7],
+        "innerSlots": 2
+      }
+    },
+    {
+      "id": 59,
+      "title": "Star Run",
+      "concept": "",
+      "map": [".R*...*", "..##...", ".M.....", "O......", "......#", "O.O..*.", ".G..#.."],
+      "goal": "collect_all_then_reach",
+      "blocks": ["up", "down", "left", "right", "repeat"],
+      "slotLimit": 6,
+      "par": 6,
+      "hint": "No stairs here: long straight Repeats with small steps between them.",
+      "repeat": {
+        "counts": [2, 3, 4, 5, 6],
+        "innerSlots": 1
+      }
+    },
+    {
+      "id": 60,
+      "title": "Smart Moves",
+      "concept": "",
+      "map": ["........", "........", "#....#.*", "......*.", ".#...M.O", "RO.O*..G", "..OM...."],
+      "goal": "collect_all_then_reach",
+      "blocks": ["up", "down", "left", "right", "repeat"],
+      "slotLimit": 5,
+      "par": 5,
+      "hint": "Climb up to clear the obstacles, then run right. Next, stairs up to the left, then down.",
+      "repeat": {
+        "counts": [2, 3, 4, 5, 6, 7],
+        "innerSlots": 2
+      }
+    },
+    {
+      "id": 61,
+      "title": "Monster Town",
+      "concept": "",
+      "map": [".*......", "........", "........", "R.O..MOG", "O....*.M", "........"],
+      "goal": "collect_all_then_reach",
+      "blocks": ["up", "down", "left", "right", "repeat"],
+      "slotLimit": 5,
+      "par": 5,
+      "hint": "Two staircases going down to the right, with a climb in between.",
+      "repeat": {
+        "counts": [2, 3, 4, 5, 6, 7],
+        "innerSlots": 2
+      }
+    },
+    {
+      "id": 62,
+      "title": "Think First",
+      "concept": "",
+      "map": ["......**", "...*...M", "G.O.O...", "O..O...R", ".....M.."],
+      "goal": "collect_all_then_reach",
+      "blocks": ["up", "down", "left", "right", "repeat"],
+      "slotLimit": 4,
+      "par": 4,
+      "hint": "Start with wide stairs up to the left. Then long runs right and back left.",
+      "repeat": {
+        "counts": [2, 3, 4, 5, 6, 7],
+        "innerSlots": 3
+      }
+    },
+    {
+      "id": 63,
+      "title": "Star Path",
+      "concept": "",
+      "map": [".......*", "........", "G.O....R", ".OM...OM", "........", "......*."],
+      "goal": "collect_all_then_reach",
+      "blocks": ["up", "down", "left", "right", "repeat"],
+      "slotLimit": 6,
+      "par": 6,
+      "hint": "No stairs needed: straight Repeats and one small step.",
+      "repeat": {
+        "counts": [2, 3, 4, 5, 6, 7],
+        "innerSlots": 1
+      }
+    },
+    {
+      "id": 64,
+      "title": "Star Catcher",
+      "concept": "",
+      "map": ["G.....OR", "O.*..M..", ".....*.."],
+      "goal": "collect_all_then_reach",
+      "blocks": ["up", "down", "left", "right", "repeat"],
+      "slotLimit": 3,
+      "par": 3,
+      "hint": "Drop down, run left, then a short staircase up to the battery.",
+      "repeat": {
+        "counts": [2, 3, 4, 5, 6, 7],
+        "innerSlots": 2
+      }
+    },
+    {
+      "id": 65,
+      "title": "Mind the Gaps",
+      "concept": "",
+      "map": ["..*....", "...M...", "RO...OG"],
+      "goal": "collect_all_then_reach",
+      "blocks": ["up", "down", "left", "right", "repeat"],
+      "slotLimit": 2,
+      "par": 2,
+      "hint": "Narrow stairs up, then wide stairs down.",
+      "repeat": {
+        "counts": [2, 3, 4, 5, 6],
+        "innerSlots": 3
+      }
+    },
+    {
+      "id": 66,
+      "title": "Clever Robot",
+      "concept": "",
+      "map": ["........", "O....*O.", "G....M.R", "..*O..M.", "........", "...*...."],
+      "goal": "collect_all_then_reach",
+      "blocks": ["up", "down", "left", "right", "repeat"],
+      "slotLimit": 5,
+      "par": 5,
+      "hint": "A long run left, then a long staircase up to the right, then back down.",
+      "repeat": {
+        "counts": [2, 3, 4, 5, 6, 7],
+        "innerSlots": 2
+      }
+    },
+    {
+      "id": 67,
+      "title": "Watch Your Step",
+      "concept": "",
+      "map": ["........", "........", "........", "..O.M...", "GO*....R"],
+      "goal": "collect_all_then_reach",
+      "blocks": ["up", "down", "left", "right", "repeat"],
+      "slotLimit": 3,
+      "par": 3,
+      "hint": "Run left first. Then tall stairs up to the right, and stairs down to the left.",
+      "repeat": {
+        "counts": [2, 3, 4, 5, 6, 7],
+        "innerSlots": 3
+      }
+    },
+    {
+      "id": 68,
+      "title": "Tiny Tray",
+      "concept": "",
+      "map": [".R.....", ".M....*", ".M.....", "*.....*", "O.O....", "..O....", "G......"],
+      "goal": "collect_all_then_reach",
+      "blocks": ["up", "down", "left", "right", "repeat"],
+      "slotLimit": 6,
+      "par": 6,
+      "hint": "No stairs: go around the board with long straight Repeats.",
+      "repeat": {
+        "counts": [2, 3, 4, 5, 6, 7],
+        "innerSlots": 1
+      }
+    },
+    {
+      "id": 69,
+      "title": "Narrow Gap",
+      "concept": "",
+      "map": ["*.M.#MOO", "G..M...R", "##..OO..", "#.......", "........", "..#.#.#.", "*......*"],
+      "goal": "collect_all_then_reach",
+      "blocks": ["up", "down", "left", "right", "repeat"],
+      "slotLimit": 5,
+      "par": 5,
+      "hint": "Down and left first. Then climb: stairs up to the right, then up to the left.",
+      "repeat": {
+        "counts": [2, 3, 4, 5, 6, 7],
+        "innerSlots": 2
+      }
+    },
+    {
+      "id": 70,
       "title": "Hole Maze",
       "concept": "",
       "map": ["........", "O.....*.", "GM.O.O.R", "........", "........", "........", "..*....."],
@@ -1151,14 +1391,14 @@ button:focus-visible { outline: 4px solid var(--star); outline-offset: 3px; }
       "blocks": ["up", "down", "left", "right", "repeat"],
       "slotLimit": 3,
       "par": 3,
-      "hint": "Only 3 slots. A Repeat can hold 3 arrows. Avoid the holes and monsters. Collect every star.",
+      "hint": "All three Repeats are stairs going left: up, then down, then up again.",
       "repeat": {
         "counts": [2, 3, 4, 5, 6, 7],
         "innerSlots": 3
       }
     },
     {
-      "id": 59,
+      "id": 71,
       "title": "Deep Holes",
       "concept": "",
       "map": [".#*....*", ".......#", "....#...", "..O....G", "RO##MM..", "#...O...", ".......*"],
@@ -1166,14 +1406,14 @@ button:focus-visible { outline: 4px solid var(--star); outline-offset: 3px; }
       "blocks": ["up", "down", "left", "right", "repeat"],
       "slotLimit": 5,
       "par": 5,
-      "hint": "Only 5 slots. A Repeat can hold 3 arrows. Avoid the holes and monsters. Collect every star.",
+      "hint": "Tall stairs up, a run right and back, then tall stairs down.",
       "repeat": {
         "counts": [2, 3, 4, 5, 6, 7],
         "innerSlots": 3
       }
     },
     {
-      "id": 60,
+      "id": 72,
       "title": "Long Way Round",
       "concept": "",
       "map": ["G.OOM.MR", ".O.*....", "........", "........", "........", "........", "*......."],
@@ -1181,7 +1421,7 @@ button:focus-visible { outline: 4px solid var(--star); outline-offset: 3px; }
       "blocks": ["up", "down", "left", "right", "repeat"],
       "slotLimit": 4,
       "par": 4,
-      "hint": "Only 4 slots. A Repeat can hold 3 arrows. Avoid the holes and monsters. Collect every star.",
+      "hint": "Three different staircases, then one long climb to finish.",
       "repeat": {
         "counts": [2, 3, 4, 5, 6, 7],
         "innerSlots": 3
@@ -1331,11 +1571,16 @@ button:focus-visible { outline: 4px solid var(--star); outline-offset: 3px; }
   try {
     const saved = JSON.parse(localStorage.getItem(KEY) || '{}');
     state.done = saved.done || {};
+    // older saves: levels were inserted, so move stars to follow their levels
+    const remap = (f) => { const m = {}; Object.keys(state.done).forEach((k) => { m[f(Number(k))] = state.done[k]; }); state.done = m; };
+    const ver = saved.ver || 2;
+    if (saved.done && ver < 3) remap((n) => (n > 31 ? n + 8 : n));            // v60 -> v68: 8 levels after 31
+    if (saved.done && ver < 4) remap((n) => (n < 50 ? n : n === 50 ? 53 : n + 4)); // v68 -> v72: 3 before Plan Ahead, 1 after
     state.unlockAll = !!saved.unlockAll;
     state.muted = !!saved.muted;
   } catch (e) { /* storage unavailable: play without saving */ }
   const save = () => {
-    try { localStorage.setItem(KEY, JSON.stringify({ done: state.done, unlockAll: state.unlockAll, muted: state.muted })); } catch (e) { /* ignore */ }
+    try { localStorage.setItem(KEY, JSON.stringify({ ver: 4, done: state.done, unlockAll: state.unlockAll, muted: state.muted })); } catch (e) { /* ignore */ }
   };
 
   /* ---------- sound ---------- */
@@ -1401,9 +1646,83 @@ button:focus-visible { outline: 4px solid var(--star); outline-offset: 3px; }
     stopRun();
     $('#win').hidden = true;
     $('#game').hidden = true;
+    $('#sol').hidden = true;
     $('#menu').hidden = false;
     renderMenu();
   }
+
+  /* ---------- grown-ups: passcode, then the solution manual ---------- */
+  const PASSCODE = '12345';
+  let entered = '', adultOK = false;
+  const SOLS = (() => { try { return JSON.parse($('#solution-data').textContent); } catch (e) { return {}; } })();
+  const ARW = { up: '\u2191', down: '\u2193', left: '\u2190', right: '\u2192' };
+  const WORD = { up: 'up', down: 'down', left: 'left', right: 'right' };
+  const drawDots = () => $('#lockDots').querySelectorAll('span').forEach((d, i) => d.classList.toggle('on', i < entered.length));
+  function openLock() {
+    if (adultOK) { showSolutions(); return; }
+    entered = ''; drawDots(); $('#lockMsg').textContent = 'Enter the passcode'; $('#lock').hidden = false;
+  }
+  function keyIn(k) {
+    if (k === 'x') { $('#lock').hidden = true; return; }
+    if (k === 'b') { entered = entered.slice(0, -1); drawDots(); return; }
+    if (entered.length >= PASSCODE.length) return;
+    entered += k; drawDots();
+    if (entered.length === PASSCODE.length) {
+      if (entered === PASSCODE) { adultOK = true; $('#lock').hidden = true; showSolutions(); }
+      else {
+        const dots = $('#lockDots'); dots.classList.remove('shake'); void dots.offsetWidth; dots.classList.add('shake');
+        $('#lockMsg').textContent = 'Not quite. Try again.';
+        setTimeout(() => { entered = ''; drawDots(); }, 350);
+      }
+    }
+  }
+  $('#keypad').addEventListener('click', (e) => { const b = e.target.closest('[data-k]'); if (b) keyIn(b.dataset.k); });
+  document.addEventListener('keydown', (e) => {
+    if ($('#lock').hidden) return;
+    if (/^[0-9]$/.test(e.key)) keyIn(e.key);
+    else if (e.key === 'Backspace') keyIn('b');
+    else if (e.key === 'Escape') keyIn('x');
+  });
+  const solWords = (prog) => prog.map((it) => it.t === 'move' ? WORD[it.d] :
+    it.n + ' times (' + it.body.map((b) => WORD[b.d]).join(', ') + ')').join(', then ');
+  function miniMap(L) {
+    const raw = DATA.levels.find((d) => d.id === L.id) || { map: [] };
+    L = { map: raw.map };
+    const g = el('div', 'sol-map');
+    g.style.gridTemplateColumns = 'repeat(' + L.map[0].length + ', 13px)';
+    const cls = { '#': 'w', O: 'o', M: 'm', '*': 's', R: 'r', G: 'g' };
+    L.map.forEach((row) => [...row].forEach((c) => g.append(el('i', cls[c] || ''))));
+    g.setAttribute('aria-hidden', 'true');
+    return g;
+  }
+  function showSolutions() {
+    stopRun();
+    $('#menu').hidden = true; $('#game').hidden = true; $('#win').hidden = true; $('#sol').hidden = false;
+    const list = $('#solList');
+    if (list.childElementCount) { $('#sol').scrollTop = 0; return; }
+    LEVELS.forEach((L) => {
+      const prog = SOLS[L.id];
+      const item = el('div', 'sol-item');
+      item.append(miniMap(L));
+      const body = el('div', 'sol-body');
+      body.append(el('h3', '', 'Level ' + L.id + ' <small>' + L.title.replace(/[<&]/g, '') + (L.slotLimit ? ' \u00b7 ' + L.slotLimit + (L.slotLimit === 1 ? ' slot' : ' slots') : '') + '</small>'));
+      if (prog) {
+        const tr = el('div', 'sol-tray');
+        prog.forEach((it) => {
+          tr.append(it.t === 'move' ? el('span', '', ARW[it.d]) : el('span', 'rep', '\u00d7' + it.n + ' ' + it.body.map((b) => ARW[b.d]).join(' ')));
+        });
+        body.append(tr);
+        const w = el('p', 'sol-words'); w.textContent = solWords(prog).replace(/^./, (c) => c.toUpperCase()) + '.'; body.append(w);
+      }
+      const h = el('p', 'sol-hint'); h.textContent = 'Hint: ' + L.hint; body.append(h);
+      const play = el('button', 'sol-play', 'Play this level'); play.type = 'button'; play.dataset.level = L.id; body.append(play);
+      item.append(body);
+      list.append(item);
+    });
+  }
+  $('#solList').addEventListener('click', (e) => { const b = e.target.closest('.sol-play'); if (b) startLevel(Number(b.dataset.level)); });
+  $('#adultBtn').addEventListener('click', openLock);
+  $('#solBack').addEventListener('click', showMenu);
 
   /* ---------- board ---------- */
   const board = $('#board');
@@ -1800,6 +2119,7 @@ button:focus-visible { outline: 4px solid var(--star); outline-offset: 3px; }
     const L = LEVELS.find((l) => l.id === id);
     state.L = L; state.program = []; state.cursorIn = null;
     $('#menu').hidden = true;
+    $('#sol').hidden = true;
     $('#win').hidden = true;
     $('#game').hidden = false;
     $('#levelNum').textContent = 'Level ' + L.id;
@@ -1842,6 +2162,7 @@ button:focus-visible { outline: 4px solid var(--star); outline-offset: 3px; }
   $('#menuRobot').innerHTML = ART.robot;
   $('#winRobot').innerHTML = ART.robot;
   $('#backBtn').innerHTML = ART.ico(P.back);
+  $('#solBack').innerHTML = ART.ico(P.back);
   $('#undoBtn').innerHTML = ART.ico(P.undo);
   $('#clearBtn').innerHTML = ART.ico(P.clear);
   setRunUI(false);
